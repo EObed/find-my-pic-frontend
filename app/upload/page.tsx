@@ -47,8 +47,6 @@ export default function UploadPage() {
         e.preventDefault()
         setIsLoading(true)
 
-
-        // You now have access to email, eventCode, and selectedImage here for your API call!
         console.log({ email, eventCode, selectedImage })
     }
 
