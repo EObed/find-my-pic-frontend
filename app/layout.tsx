@@ -3,6 +3,7 @@ import { Poppins, Inter } from 'next/font/google'
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import {ThemeProvider} from "@/components/ThemeProvider";
+import TanstackQueryProvider from "@/providers/TanstackQueryProvider";
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -25,7 +26,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-      <ThemeProvider attribute="class" enableSystem defaultTheme="dark">{children}</ThemeProvider>
+        <TanstackQueryProvider>
+          <ThemeProvider attribute="class" enableSystem defaultTheme="dark">{children}</ThemeProvider>
+        </TanstackQueryProvider>
       </body>
     </html>
   );
