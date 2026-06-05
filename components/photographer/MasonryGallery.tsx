@@ -2,12 +2,10 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import {Photo} from "@/interfaces/Photo";
 
 interface MasonryGalleryProps {
-    images: Array<{
-        id: string
-        preview: string
-    }>
+    images: Photo[]
     eventName: string
 }
 
@@ -30,10 +28,10 @@ export function MasonryGallery({ images, eventName }: MasonryGalleryProps) {
                     <div
                         key={image.id || index}
                         className="relative bg-background rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg cursor-pointer group"
-                        onClick={() => setSelectedImage(image.preview)}
+                        onClick={() => setSelectedImage(image.file)}
                     >
                         <img
-                            src={image.preview}
+                            src={image.file}
                             alt={`${eventName} - Photo ${index + 1}`}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />

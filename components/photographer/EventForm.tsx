@@ -14,12 +14,8 @@ import { toast } from 'sonner'
 import { Loader } from '@/components/Loader'
 import { ImageUploadInput } from '@/components/photographer/ImageUploadInput'
 import { Textarea } from '@/components/ui/textarea'
+import {FrontEndImage, Photo} from "@/interfaces/Photo";
 
-interface ImageFile {
-    id: string
-    file: File
-    preview: string
-}
 
 interface EventFormProps {
     mode: 'create' | 'edit'
@@ -29,11 +25,12 @@ interface EventFormProps {
         code: string
         eventDate: string
         description: string
-        images: ImageFile[]
+        images: Photo[]
     }
+    onCancel: () => void
 }
 
-export function EventForm({ mode, eventId, initialData }: EventFormProps) {
+export function EventForm({ mode, eventId, initialData, onCancel }: EventFormProps) {
     const router = useRouter()
     const [formData, setFormData] = useState({
         name: initialData?.name || '',
@@ -45,7 +42,8 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
         initialData?.eventDate ? new Date(initialData.eventDate) : undefined
     )
     const [calendarOpen, setCalendarOpen] = useState(false)
-    const [images, setImages] = useState<ImageFile[]>(initialData?.images || [])
+    const [existingImages, setExistingImages] = useState<Photo[]>(initialData?.images || [])
+    const [pendingPhotos, setPendingPhotos] = useState<FrontEndImage[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -58,7 +56,7 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
         if (!eventDate) {
             newErrors.eventDate = 'Event date is required'
         }
-        if (images.length === 0) {
+        if (pendingPhotos.length === 0 && existingImages.length === 0) {
             newErrors.images = 'Please upload at least one image'
         }
 
@@ -69,14 +67,12 @@ export function EventForm({ mode, eventId, initialData }: EventFormProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-console.log("start")
         if (!validateForm()) {
             toast.error('Please fix the errors in the form')
             return
         }
 
         setIsLoading(true)
-        console.log("loading set to true")
 
         try {
             // TODO: replace with real API call when ready
@@ -85,7 +81,24 @@ console.log("start")
             // data.append('code', formData.code.toUpperCase())
             // data.append('eventDate', eventDate ? eventDate.toISOString() : '')
             // data.append('description', formData.description)
-            // images.forEach((img) => { data.append('images', img.file) })
+            // const existingBlobs = await Promise.all(
+            //     existingImages.map(async (img) => {
+            //         const res = await fetch(img.file)
+            //         const blob = await res.blob()
+            //         return new File([blob], img.id, { type: blob.type })
+            //     })
+            // )
+            //
+            // // Convert pending File objects to Blobs
+            // const pendingBlobs = await Promise.all(
+            //         pendingPhotos.map(async (p) => {
+            //             const blob = new Blob([await p.file.arrayBuffer()], { type: p.file.type })
+            //             return new File([blob], p.file.name, { type: p.file.type })
+            //         })
+            //     )
+            //
+            // ;[...existingBlobs, ...pendingBlobs]
+            //     .forEach((file) => data.append('images', file))
             // const url = mode === 'create' ? '/api/events' : `/api/events/${eventId}`
             // const response = await fetch(url, { method: mode === 'create' ? 'POST' : 'PATCH', body: data })
             // if (!response.ok) throw new Error(await response.text())
@@ -101,7 +114,6 @@ console.log("start")
             router.push('/p/my-events/001')
             router.refresh()
         } catch (error) {
-            console.error('Form submission error:', error)
             toast.error('Failed to save event. Please try again.')
         } finally {
             setIsLoading(false)
@@ -229,9 +241,8 @@ console.log("start")
                         <h2 className="text-xl font-semibold mb-6">Event Photos</h2>
                         <div className="max-h-[480px] overflow-y-auto pr-1">
                             <ImageUploadInput
-                                onImagesChange={setImages}
-                                maxImages={50}
-                                initialImages={images}
+                                onImagesChange={setPendingPhotos}
+                                maxImages={100}
                             />
                         </div>
                         {errors.images && (
@@ -244,9 +255,7 @@ console.log("start")
             {/* Sticky footer actions */}
             <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-t border-border">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex gap-4 justify-end">
-                    <Link href="/p/my-events">
-                        <Button variant="outline">Cancel</Button>
-                    </Link>
+                    <Button type="button" onClick={onCancel} variant="outline">Cancel</Button>
                     <Button
                         type="submit"
                         form="event-form"
