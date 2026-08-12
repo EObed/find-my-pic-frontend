@@ -1,7 +1,8 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Button } from '@/components/ui/button'
-import { Calendar, FileText, Images, CheckCircle, AlertCircle } from 'lucide-react'
+import { Calendar, FileText, Images, CheckCircle, AlertCircle, Pencil } from 'lucide-react'
 
 interface EventDetailsViewProps {
     event: {
@@ -17,10 +18,15 @@ interface EventDetailsViewProps {
 }
 
 export function EventDetailsView({ event, onEdit }: EventDetailsViewProps) {
-    // Mock statistics - in production these would come from the backend
-    const attemptedMatches = Math.floor(Math.random() * 500) + 100
-    const successfulMatches = Math.floor(attemptedMatches * 0.65)
-    const successRate = Math.round((successfulMatches / attemptedMatches) * 100)
+    // Mock statistics - in production these would come from the backend.
+    // Derived deterministically from the event id so renders stay stable (no Math.random during render).
+    const { attemptedMatches, successfulMatches, successRate } = useMemo(() => {
+        const seed = event.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+        const attempted = (seed * 37) % 500 + 100
+        const successful = Math.floor(attempted * 0.65)
+        const rate = Math.round((successful / attempted) * 100)
+        return { attemptedMatches: attempted, successfulMatches: successful, successRate: rate }
+    }, [event.id])
 
     const formatDate = (date: string | Date | undefined) => {
         if (!date) return 'N/A'
@@ -36,37 +42,38 @@ export function EventDetailsView({ event, onEdit }: EventDetailsViewProps) {
     return (
         <div className="space-y-8">
             {/* Header with Edit Button */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-col items-start justify-between gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500 sm:flex-row sm:items-center">
                 <div>
-                    <h1 className="text-3xl sm:text-4xl font-bold text-balance">{event.name}</h1>
-                    <p className="text-foreground/60 mt-1">Event Gallery</p>
+                    <h1 className="text-3xl font-bold text-balance sm:text-4xl">{event.name}</h1>
+                    <p className="mt-1 text-foreground/60">Event Gallery</p>
                 </div>
                 <Button
                     onClick={onEdit}
-                    className="bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:shadow-primary/50 transition-shadow w-full sm:w-auto"
+                    className="w-full shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98] sm:w-auto"
                 >
+                    <Pencil className="mr-2 h-4 w-4" />
                     Edit Event
                 </Button>
             </div>
 
             {/* Event Details Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 {/* Event Information Card */}
-                <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-                    <h2 className="text-lg font-semibold flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-primary" />
+                <div className="card-lift space-y-4 rounded-xl border border-border bg-card p-6 shadow-xs animate-in fade-in slide-in-from-bottom-2 duration-500 delay-75 fill-mode-both">
+                    <h2 className="flex items-center gap-2 text-lg font-semibold">
+                        <FileText className="h-5 w-5 text-primary" />
                         Event Information
                     </h2>
 
                     <div className="space-y-3">
                         <div>
                             <p className="text-sm text-foreground/60">Event Code</p>
-                            <p className="text-lg font-mono font-semibold text-primary">{event.code}</p>
+                            <p className="font-mono text-lg font-semibold text-primary">{event.code}</p>
                         </div>
 
                         <div>
-                            <p className="text-sm text-foreground/60 flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
+                            <p className="flex items-center gap-2 text-sm text-foreground/60">
+                                <Calendar className="h-4 w-4" />
                                 Event Date
                             </p>
                             <p className="text-sm text-foreground">{formatDate(event.eventDate)}</p>
@@ -89,33 +96,33 @@ export function EventDetailsView({ event, onEdit }: EventDetailsViewProps) {
                 </div>
 
                 {/* Statistics Card */}
-                <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-                    <h2 className="text-lg font-semibold flex items-center gap-2">
-                        <Images className="w-5 h-5 text-accent" />
+                <div className="card-lift space-y-4 rounded-xl border border-border bg-card p-6 shadow-xs animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both">
+                    <h2 className="flex items-center gap-2 text-lg font-semibold">
+                        <Images className="h-5 w-5 text-accent" />
                         Statistics
                     </h2>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-background/50 rounded-lg p-4">
+                        <div className="rounded-lg bg-muted/50 p-4">
                             <p className="text-sm text-foreground/60">Total Photos</p>
-                            <p className="text-2xl font-bold text-primary mt-1">{event.photoCount}</p>
+                            <p className="mt-1 text-2xl font-bold text-primary">{event.photoCount}</p>
                         </div>
 
-                        <div className="bg-background/50 rounded-lg p-4">
+                        <div className="rounded-lg bg-muted/50 p-4">
                             <p className="text-sm text-foreground/60">Success Rate</p>
-                            <p className="text-2xl font-bold text-accent mt-1">{successRate}%</p>
+                            <p className="mt-1 text-2xl font-bold text-accent">{successRate}%</p>
                         </div>
 
-                        <div className="bg-background/50 rounded-lg p-4 flex items-center gap-3">
-                            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
+                            <CheckCircle className="h-5 w-5 shrink-0 text-emerald-500" />
                             <div>
                                 <p className="text-xs text-foreground/60">Successful</p>
                                 <p className="text-lg font-bold text-foreground">{successfulMatches}</p>
                             </div>
                         </div>
 
-                        <div className="bg-background/50 rounded-lg p-4 flex items-center gap-3">
-                            <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                        <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-4">
+                            <AlertCircle className="h-5 w-5 shrink-0 text-orange-500" />
                             <div>
                                 <p className="text-xs text-foreground/60">Attempted</p>
                                 <p className="text-lg font-bold text-foreground">{attemptedMatches}</p>

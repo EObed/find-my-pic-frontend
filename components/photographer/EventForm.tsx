@@ -155,7 +155,7 @@ export function EventForm({ mode, eventId, initialData, onCancel }: EventFormPro
             >
                 <div className="space-y-8">
                     {/* Event Details */}
-                    <div className="bg-card rounded-lg border border-border p-6 space-y-6">
+                    <div className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-xs animate-in fade-in slide-in-from-bottom-2 duration-500">
                         <div>
                             <h2 className="text-xl font-semibold mb-6">Event Details</h2>
 
@@ -237,7 +237,7 @@ export function EventForm({ mode, eventId, initialData, onCancel }: EventFormPro
                     </div>
 
                     {/* Images — fixed height so photos scroll, not the action buttons */}
-                    <div className="bg-card rounded-lg border border-border p-6">
+                    <div className="rounded-xl border border-border bg-card p-6 shadow-xs animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
                         <h2 className="text-xl font-semibold mb-6">Event Photos</h2>
                         <div className="max-h-[480px] overflow-y-auto pr-1">
                             <ImageUploadInput
@@ -260,7 +260,7 @@ export function EventForm({ mode, eventId, initialData, onCancel }: EventFormPro
                         type="submit"
                         form="event-form"
                         disabled={isLoading}
-                        className="bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:shadow-primary/50"
+                        className="shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98]"
                     >
                         {mode === 'create' ? 'Create Event' : 'Save Changes'}
                     </Button>

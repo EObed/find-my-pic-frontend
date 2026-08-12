@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
 import {EventsTable} from "@/components/photographer/EventsTable";
@@ -80,6 +82,8 @@ const generateMockEvents = (): IEvent[] => {
 }
 
 export default function MyEventsPage() {
+    const router = useRouter()
+
     const [events, setEvents] = useState<IEvent[]>([])
     const [isLoading, setIsLoading] = useState(true)
 
@@ -89,8 +93,7 @@ export default function MyEventsPage() {
     const [selectedEvent, setSelectedEvent] = useState<IEvent | null>(null)
 
     const handleViewEvent = (event: IEvent) => {
-        setSelectedEvent(event)
-        //setIsDetailsModalOpen(true)
+        router.push(`/p/my-events/${event.id}`)
     }
 
     const handleDeleteEvent = (event: IEvent) => {
@@ -144,19 +147,21 @@ export default function MyEventsPage() {
         <main className="min-h-screen bg-background">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 {/* Page Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                <div className="mb-8 flex flex-col items-start justify-between gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="text-3xl sm:text-4xl font-bold">My Events</h1>
-                        <p className="text-foreground/60 mt-2">
+                        <h1 className="text-3xl font-bold sm:text-4xl">My Events</h1>
+                        <p className="mt-2 text-foreground/60">
                             Manage your event galleries and upload photos
                         </p>
                     </div>
 
                     <Button
                         onClick={handleCreateNewEvent}
-                        className="bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:shadow-primary/50 transition-shadow w-full sm:w-auto"
+                        className="w-full shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98] sm:w-auto"
+                        render={<Link href="/p/my-events/new" />}
+                        nativeButton={false}
                     >
-                        <Plus className="w-4 h-4 mr-2" />
+                        <Plus className="mr-2 h-4 w-4" />
                         Create Event
                     </Button>
                 </div>

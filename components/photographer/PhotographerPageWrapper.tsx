@@ -52,11 +52,11 @@ const PhotographerPageWrapper = ({
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
                         <div className="flex items-center gap-2">
-                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                                <Camera className="w-6 h-6 text-primary-foreground" />
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary shadow-sm">
+                                <Camera className="h-6 w-6 text-primary-foreground" />
                             </div>
 
-                            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                            <span className="text-xl font-bold text-foreground">
                                 ImageFinder
                             </span>
                         </div>
