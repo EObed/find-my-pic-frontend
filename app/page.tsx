@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card'
 import { useTheme } from 'next-themes'
 import { Moon, Sun, Upload, Sparkles, Users, Download, Camera, LockKeyhole, FileStack, ArrowRight } from 'lucide-react'
 import { useRouter } from "next/navigation";
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { UploadDiagram, AnalysisDiagram, DownloadDiagram } from '@/components/landing/StepDiagrams'
 
@@ -123,8 +124,13 @@ export default function Page() {
                       )}
                     </button>
                 )}
-                <Button variant="outline" className="hidden sm:inline-flex">
-                  Sign In
+                <Button
+                    variant="outline"
+                    className="hidden sm:inline-flex"
+                    render={<Link href="/p" />}
+                    nativeButton={false}
+                >
+                  For Photographers
                 </Button>
                 <Button onClick={handleGetStarted} className="shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98]">
                   Get Started
