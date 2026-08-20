@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Upload, Camera, X, RefreshCw } from 'lucide-react'
+import { Upload, Camera, X, RefreshCw, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface ImageInputProps {
@@ -129,25 +129,29 @@ export function ImageInput({ onImageSelected, disabled = false }: ImageInputProp
     // --- VIEW 1: Image Captured Preview Mode ---
     if (preview) {
         return (
-            <div className="space-y-4">
-                <div className="relative rounded-xl overflow-hidden bg-muted border-2 border-border">
+<div className="space-y-3 animate-in fade-in zoom-in-95 duration-300">
+                <div className="glow-ring relative overflow-hidden rounded-2xl border border-border bg-muted">
                     <img
                         src={preview}
                         alt="Selected"
-                        className="w-full h-auto max-h-96 object-cover mx-auto"
+                        className="mx-auto h-auto max-h-96 w-full object-cover"
                     />
+                    <span className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full border border-white/20 bg-black/55 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                        Photo ready
+                    </span>
                 </div>
-                <div className="flex items-center justify-between">
-                    <p className="text-sm text-foreground/70 truncate max-w-[70%]">{fileName}</p>
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-3 py-2">
+                    <p className="truncate text-sm text-muted-foreground">{fileName}</p>
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={handleClear}
                         disabled={disabled}
-                        className="ml-2"
+                        className="shrink-0"
                     >
-                        <X className="w-4 h-4 mr-2" />
+                        <X className="mr-2 h-4 w-4" />
                         Change
                     </Button>
                 </div>
@@ -158,33 +162,37 @@ export function ImageInput({ onImageSelected, disabled = false }: ImageInputProp
     // --- VIEW 2: Active Live Camera Interface ---
     if (isCameraActive) {
         return (
-            <div className="space-y-4">
-                <div className="relative rounded-xl overflow-hidden bg-black border-2 border-accent/40 aspect-square md:max-h-[500px] w-full flex items-center justify-center">                    <video
+            <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-2xl border-2 border-accent/40 bg-black md:max-h-[500px]">
+                    <video
                         ref={videoRef}
                         autoPlay
                         playsInline
                         // We visually mirror the video stream element if using the front camera so it acts like a real mirror
-                        className={`w-full h-full object-cover ${facingMode === 'user' ? 'scale-x-[-1]' : ''}`}
+                        className={`h-full w-full object-cover ${facingMode === 'user' ? 'scale-x-[-1]' : ''}`}
                     />
 
                     {/* Top overlay action to flip camera lens */}
                     <button
                         type="button"
                         onClick={toggleCamera}
-                        className="absolute top-3 left-3 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur-sm transition-colors"
+                        className="absolute top-3 left-3 rounded-full bg-black/60 p-2 text-white backdrop-blur-sm transition-colors hover:bg-black/80"
                         title="Switch Camera"
                     >
-                        <RefreshCw className="w-5 h-5" />
+                        <RefreshCw className="h-5 w-5" />
                     </button>
 
                     {/* Top overlay action to cancel out */}
                     <button
                         type="button"
                         onClick={stopCamera}
-                        className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white p-2 rounded-full backdrop-blur-sm transition-colors"
+                        className="absolute top-3 right-3 rounded-full bg-black/60 p-2 text-white backdrop-blur-sm transition-colors hover:bg-black/80"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="h-5 w-5" />
                     </button>
+
+                    {/* Framing guide */}
+                    <div className="pointer-events-none absolute inset-8 rounded-2xl border-2 border-dashed border-white/30" />
                 </div>
 
                 <div className="flex justify-center">
@@ -193,9 +201,9 @@ export function ImageInput({ onImageSelected, disabled = false }: ImageInputProp
                         size="lg"
                         onClick={capturePhoto}
                         disabled={disabled}
-                        className="rounded-full px-8 bg-accent text-accent-foreground hover:bg-accent/90 font-medium shadow-lg"
+                        className="rounded-full bg-accent px-8 font-medium text-accent-foreground shadow-lg transition-transform hover:scale-105 hover:bg-accent/90 active:scale-95"
                     >
-                        <Camera className="w-5 h-5 mr-2" />
+                        <Camera className="mr-2 h-5 w-5" />
                         Snap Photo
                     </Button>
                 </div>
@@ -216,7 +224,7 @@ export function ImageInput({ onImageSelected, disabled = false }: ImageInputProp
             />
 
             {cameraError && (
-                <p className="text-sm text-destructive text-center font-medium">{cameraError}</p>
+                <p className="text-center text-sm font-medium text-destructive">{cameraError}</p>
             )}
 
             <div className="grid grid-cols-2 gap-4">
@@ -224,15 +232,15 @@ export function ImageInput({ onImageSelected, disabled = false }: ImageInputProp
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={disabled}
-                    className="relative group p-6 rounded-xl border-2 border-dashed border-primary/30 hover:border-primary/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-card hover:bg-muted/50"
+                    className="card-lift group relative rounded-2xl border-2 border-dashed border-primary/30 bg-card p-6 transition-colors hover:border-primary/60 hover:bg-primary/5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <div className="flex flex-col items-center gap-3 text-center">
-                        <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                            <Upload className="w-6 h-6 text-primary" />
+                        <div className="rounded-xl bg-primary/10 p-3 transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                            <Upload className="h-6 w-6 text-primary" />
                         </div>
                         <div>
                             <p className="font-semibold text-foreground">Upload Photo</p>
-                            <p className="text-xs text-foreground/60">Browse your files</p>
+                            <p className="text-xs text-muted-foreground">Browse your files</p>
                         </div>
                     </div>
                 </button>
@@ -241,15 +249,15 @@ export function ImageInput({ onImageSelected, disabled = false }: ImageInputProp
                     type="button"
                     onClick={() => startCamera()}
                     disabled={disabled}
-                    className="relative group p-6 rounded-xl border-2 border-dashed border-accent/30 hover:border-accent/60 transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-card hover:bg-muted/50"
+                    className="card-lift group relative rounded-2xl border-2 border-dashed border-accent/30 bg-card p-6 transition-colors hover:border-accent/60 hover:bg-accent/5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <div className="flex flex-col items-center gap-3 text-center">
-                        <div className="p-3 rounded-lg bg-accent/10 group-hover:bg-accent/20 transition-colors">
-                            <Camera className="w-6 h-6 text-accent" />
+                        <div className="rounded-xl bg-accent/10 p-3 transition-transform duration-300 group-hover:scale-110 group-hover:bg-accent/20">
+                            <Camera className="h-6 w-6 text-accent" />
                         </div>
                         <div>
                             <p className="font-semibold text-foreground">Take Photo</p>
-                            <p className="text-xs text-foreground/60">Use your camera</p>
+                            <p className="text-xs text-muted-foreground">Use your camera</p>
                         </div>
                     </div>
                 </button>

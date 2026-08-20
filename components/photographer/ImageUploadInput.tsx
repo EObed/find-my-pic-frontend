@@ -1,84 +1,63 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Button } from '@/components/ui/button'
 import { Upload, X } from 'lucide-react'
-
-interface ImageFile {
-    id: string
-    file: File
-    preview: string
-}
+import {FrontEndImage} from "@/interfaces/Photo";
 
 interface ImageUploadInputProps {
-    onImagesChange: (images: ImageFile[]) => void
+    onImagesChange: (images: FrontEndImage[]) => void
     maxImages?: number
-    initialImages?: ImageFile[]
 }
 
 export function ImageUploadInput({
                                      onImagesChange,
-                                     maxImages = 50,
-                                     initialImages = [],
+                                     maxImages = 100,
                                  }: ImageUploadInputProps) {
-    const [images, setImages] = useState<ImageFile[]>(initialImages)
+    const [pendingPhotos, setPendingPhotos] = useState<FrontEndImage[]>([])
     const fileInputRef = useRef<HTMLInputElement>(null)
+
+    const updateImages = (updated: FrontEndImage[]) => {
+        setPendingPhotos(updated)
+        onImagesChange(updated)
+    }
 
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.currentTarget.files
         if (!files) return
 
-        const newImages: ImageFile[] = []
-        const remainingSlots = maxImages - images.length
+        const remainingSlots = maxImages - pendingPhotos.length
+        const newPhotos: FrontEndImage[] = Array.from(files)
+            .slice(0, remainingSlots)
+            .filter((file) => file.type.startsWith('image/'))
+            .map((file) => ({
+                tempId: Math.random().toString(36).substr(2, 9),
+                file,
+                preview: URL.createObjectURL(file),
+            }))
 
-        Array.from(files).slice(0, remainingSlots).forEach((file) => {
-            if (file.type.startsWith('image/')) {
-                const preview = URL.createObjectURL(file)
-                newImages.push({
-                    id: Math.random().toString(36).substr(2, 9),
-                    file,
-                    preview,
-                })
-            }
-        })
+        updateImages([...pendingPhotos, ...newPhotos])
 
-        const updatedImages = [...images, ...newImages]
-        setImages(updatedImages)
-        onImagesChange(updatedImages)
-
-        // Reset input
-        if (fileInputRef.current) {
-            fileInputRef.current.value = ''
-        }
+        if (fileInputRef.current) fileInputRef.current.value = ''
     }
 
-    const removeImage = (id: string) => {
-        const updatedImages = images.filter((img) => img.id !== id)
-        setImages(updatedImages)
-        onImagesChange(updatedImages)
+    const removeImage = (tempId: string) => {
+        const photo = pendingPhotos.find((p) => p.tempId === tempId)
+        if (photo) URL.revokeObjectURL(photo.preview) // clean up blob URL
+        updateImages(pendingPhotos.filter((p) => p.tempId !== tempId))
     }
 
-    const replaceImage = (id: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const replaceImage = (tempId: string, event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.currentTarget.files?.[0]
         if (!file || !file.type.startsWith('image/')) return
 
-        const preview = URL.createObjectURL(file)
-        const updatedImages = images.map((img) =>
-            img.id === id
-                ? {
-                    id,
-                    file,
-                    preview,
-                }
-                : img
-        )
-        setImages(updatedImages)
-        onImagesChange(updatedImages)
+        const updatedPhotos = pendingPhotos.map((p) => {
+            if (p.tempId !== tempId) return p
+            URL.revokeObjectURL(p.preview) // clean up old blob URL
+            return { ...p, file, preview: URL.createObjectURL(file) }
+        })
 
-        // Reset input
-        if (event.currentTarget) {
-            event.currentTarget.value = ''
-        }
+        updateImages(updatedPhotos)
+        if (event.currentTarget) event.currentTarget.value = ''
     }
 
     return (
@@ -86,7 +65,7 @@ export function ImageUploadInput({
             {/* Upload Button */}
             <div
                 onClick={() => fileInputRef.current?.click()}
-                className="relative border-2 border-dashed border-border rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                className="card-lift group relative cursor-pointer rounded-xl border-2 border-dashed border-border p-8 text-center transition-colors hover:border-primary/50 hover:bg-primary/5"
             >
                 <input
                     ref={fileInputRef}
@@ -94,54 +73,60 @@ export function ImageUploadInput({
                     multiple
                     accept="image/*"
                     onChange={handleFileSelect}
-                    disabled={images.length >= maxImages}
+                    disabled={pendingPhotos.length >= maxImages}
                     className="hidden"
                 />
                 <div className="flex flex-col items-center gap-2">
-                    <Upload className="w-8 h-8 text-primary/60" />
+                    <div className="rounded-xl bg-primary/10 p-3 transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                        <Upload className="h-6 w-6 text-primary" />
+                    </div>
                     <div>
                         <p className="font-semibold text-foreground">Click to upload images</p>
-                        <p className="text-sm text-foreground/60">
-                            {images.length}/{maxImages} images
+                        <p className="text-sm text-muted-foreground">
+                            {pendingPhotos.length}/{maxImages} images
                         </p>
                     </div>
                 </div>
             </div>
 
             {/* Image Grid */}
-            {images.length > 0 && (
+            {pendingPhotos.length > 0 && (
                 <div className="space-y-2">
                     <p className="text-sm font-medium text-foreground">Uploaded Images</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        {images.map((img) => (
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+                        {pendingPhotos.map((photo, index) => (
                             <div
-                                key={img.id}
-                                className="relative group rounded-lg overflow-hidden bg-muted aspect-square"
+                                key={photo.tempId}
+                                style={{ animationDelay: `${Math.min(index * 30, 240)}ms` }}
+                                className="group relative aspect-square overflow-hidden rounded-lg bg-muted animate-in fade-in zoom-in-95 fill-mode-both"
                             >
                                 <img
-                                    src={img.preview}
+                                    src={photo.preview}
                                     alt="Preview"
-                                    className="w-full h-full object-cover"
+                                    className="h-full w-full object-cover"
                                 />
-                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                                     <label
-                                        className="cursor-pointer p-2 rounded-lg bg-primary hover:bg-primary/90 transition-colors"
+                                        className="cursor-pointer rounded-lg bg-primary p-2 transition-colors hover:bg-primary/90"
                                         title="Replace image"
                                     >
-                                        <Upload className="w-4 h-4 text-primary-foreground" />
+                                        <Upload className="h-4 w-4 text-primary-foreground" />
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            onChange={(e) => replaceImage(img.id, e)}
+                                            onChange={(e) => replaceImage(photo.tempId, e)}
                                             className="hidden"
                                         />
                                     </label>
                                     <button
-                                        onClick={() => removeImage(img.id)}
-                                        className="p-2 rounded-lg bg-destructive hover:bg-destructive/90 transition-colors"
+                                        onClick={(e) => {
+                                            e.stopPropagation() // prevent triggering the upload div's onClick
+                                            removeImage(photo.tempId)
+                                        }}
+                                        className="rounded-lg bg-destructive p-2 transition-colors hover:bg-destructive/90"
                                         title="Remove image"
                                     >
-                                        <X className="w-4 h-4 text-destructive-foreground" />
+                                        <X className="h-4 w-4 text-destructive-foreground" />
                                     </button>
                                 </div>
                             </div>
@@ -150,8 +135,8 @@ export function ImageUploadInput({
                 </div>
             )}
 
-            {images.length >= maxImages && (
-                <p className="text-sm text-destructive font-medium">
+            {pendingPhotos.length >= maxImages && (
+                <p className="text-sm font-medium text-destructive">
                     Maximum number of images reached ({maxImages})
                 </p>
             )}
