@@ -130,14 +130,14 @@ export default function PhotographerLandingPage() {
               <Button
                 variant="outline"
                 className="hidden sm:inline-flex"
-                render={<Link href="/p/my-events" />}
+                render={<Link href="/p/login" />}
                 nativeButton={false}
               >
                 Sign In
               </Button>
               <Button
                 className="shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98]"
-                render={<Link href="/p/my-events" />}
+                render={<Link href="/p/signup" />}
                 nativeButton={false}
               >
                 Sign Up
@@ -176,12 +176,12 @@ export default function PhotographerLandingPage() {
               <Button
                 size="lg"
                 className="shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
-                render={<Link href="/p/my-events" />}
+                render={<Link href="/p/signup" />}
                 nativeButton={false}
               >
                 Get Started Free
               </Button>
-              <Button size="lg" variant="outline" render={<Link href="/p/my-events" />} nativeButton={false}>
+              <Button size="lg" variant="outline" render={<Link href="/p/login" />} nativeButton={false}>
                 Sign In
               </Button>
             </div>
@@ -330,7 +330,7 @@ export default function PhotographerLandingPage() {
           <Button
             size="lg"
             className="relative shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
-            render={<Link href="/p/my-events" />}
+            render={<Link href="/p/signup" />}
             nativeButton={false}
           >
             Get Started Free

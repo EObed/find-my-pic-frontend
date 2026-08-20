@@ -13,6 +13,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {Avatar} from "@/components/photographer/Avatar";
+import {getItem, removeItem} from "@/lib/storage";
 
 
 type PhotographerPageWrapperProps = {
@@ -25,9 +26,10 @@ type PhotographerPageWrapperProps = {
 
 const PhotographerPageWrapper = ({
                                      children,
-                                     user,
+                                     user: fallbackUser,
                                  }: PhotographerPageWrapperProps) => {
     const [mounted, setMounted] = useState(false);
+    const [user, setUser] = useState(fallbackUser);
 
     const { theme, setTheme } = useTheme();
     const router = useRouter();
@@ -35,6 +37,14 @@ const PhotographerPageWrapper = ({
     useEffect(() => {
         const id = requestAnimationFrame(() => {
             setMounted(true);
+
+            const storedUser = getItem("user");
+            if (storedUser) {
+                setUser({
+                    name: `${storedUser.firstName} ${storedUser.lastName}`.trim(),
+                    email: storedUser.email,
+                });
+            }
         });
 
         return () => cancelAnimationFrame(id);
@@ -42,7 +52,8 @@ const PhotographerPageWrapper = ({
 
 
     const handleLogout = async () => {
-        router.push("/");
+        removeItem("user");
+        router.push("/p");
     };
 
     return (
