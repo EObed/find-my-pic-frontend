@@ -1,8 +1,7 @@
 "use client";
 
-import React, { ReactNode, useEffect, useState } from "react";
-import { Camera, Moon, Sun, LogOut } from "lucide-react";
-import { useTheme } from "next-themes";
+import { ReactNode } from "react";
+import { Camera } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -13,6 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {Avatar} from "@/components/photographer/Avatar";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 
 type PhotographerPageWrapperProps = {
@@ -27,22 +27,15 @@ const PhotographerPageWrapper = ({
                                      children,
                                      user,
                                  }: PhotographerPageWrapperProps) => {
-    const [mounted, setMounted] = useState(false);
 
-    const { theme, setTheme } = useTheme();
     const router = useRouter();
 
-    useEffect(() => {
-        const id = requestAnimationFrame(() => {
-            setMounted(true);
-        });
-
-        return () => cancelAnimationFrame(id);
-    }, []);
 
 
     const handleLogout = async () => {
-        router.push("/");
+        await fetch("/api/auth/session", { method: "DELETE" });
+        router.push("/p");
+        router.refresh();
     };
 
     return (
@@ -63,23 +56,7 @@ const PhotographerPageWrapper = ({
 
                         {/* Right Section */}
                         <div className="flex items-center gap-3">
-                            {mounted && (
-                                <button
-                                    onClick={() =>
-                                        setTheme(
-                                            theme === "dark" ? "light" : "dark"
-                                        )
-                                    }
-                                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                                    aria-label="Toggle theme"
-                                >
-                                    {theme === "dark" ? (
-                                        <Sun className="w-5 h-5 text-accent" />
-                                    ) : (
-                                        <Moon className="w-5 h-5 text-primary" />
-                                    )}
-                                </button>
-                            )}
+                            <ThemeToggle />
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

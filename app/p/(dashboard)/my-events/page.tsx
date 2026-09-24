@@ -113,7 +113,6 @@ export default function MyEventsPage() {
             try {
                 const mockEvents = generateMockEvents()
                 setEvents(mockEvents)
-                toast.success('Events refreshed successfully!')
             } catch (error) {
                 console.error('Error generating events:', error)
                 toast.error('Failed to refresh events')
@@ -130,7 +129,6 @@ export default function MyEventsPage() {
                 try {
                     const mockEvents = generateMockEvents()
                     setEvents(mockEvents)
-                    toast.success('Events loaded successfully!')
                 } catch (error) {
                     console.error('Error generating events:', error)
                     toast.error('Failed to load events')

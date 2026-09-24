@@ -1,18 +1,24 @@
 import { ReactNode } from "react";
-import PhotographerPageWrapper from "@/components/photographer/PhotographerPageWrapper";
+import { redirect } from "next/navigation";
 
-export default function Layout({
-                                   children,
-                               }: {
+import PhotographerPageWrapper from "@/components/photographer/PhotographerPageWrapper";
+import { getSession } from "@/lib/session";
+
+export default async function Layout({
+                                        children,
+                                    }: {
     children: ReactNode;
 }) {
+    const session = await getSession();
+    if (!session) {
+        redirect("/p/login");
+    }
+
+    const { user } = session;
+    const name = `${user.firstName} ${user.lastName}`.trim() || user.email;
+
     return (
-        <PhotographerPageWrapper
-            user={{
-                name: "John Doe",
-                email: "john@example.com",
-            }}
-        >
+        <PhotographerPageWrapper user={{ name, email: user.email }}>
             {children}
         </PhotographerPageWrapper>
     );

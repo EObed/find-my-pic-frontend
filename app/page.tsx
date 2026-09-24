@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect, type CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { useTheme } from 'next-themes'
-import { Moon, Sun, Upload, Sparkles, Users, Download, Camera, LockKeyhole, FileStack, ArrowRight } from 'lucide-react'
+import { Upload, Sparkles, Users, Download, Camera, LockKeyhole, FileStack, ArrowRight } from 'lucide-react'
 import { useRouter } from "next/navigation";
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { UploadDiagram, AnalysisDiagram, DownloadDiagram } from '@/components/landing/StepDiagrams'
 
 const FEATURES = [
@@ -69,19 +69,10 @@ const STEPS = [
 ]
 
 export default function Page() {
-  const [mounted, setMounted] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
-  const { theme, setTheme } = useTheme();
 
   const router = useRouter();
 
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      setMounted(true)
-    })
-
-    return () => cancelAnimationFrame(id)
-  }, []);
 
   function handleGetStarted () {
     router.push("/upload");
@@ -111,19 +102,7 @@ export default function Page() {
               </div>
 
               <div className="flex items-center gap-4">
-                {mounted && (
-                    <button
-                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                        className="rounded-lg bg-muted p-2 transition-colors hover:bg-muted/80"
-                        aria-label="Toggle theme"
-                    >
-                      {theme === 'dark' ? (
-                          <Sun className="h-5 w-5 text-accent" />
-                      ) : (
-                          <Moon className="h-5 w-5 text-primary" />
-                      )}
-                    </button>
-                )}
+                <ThemeToggle />
                 <Button
                     variant="outline"
                     className="hidden sm:inline-flex"

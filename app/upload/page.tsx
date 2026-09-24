@@ -1,19 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ImageInput } from '@/components/ImageInput';
 import { Loader } from '@/components/Loader';
-import { ArrowLeft, AlertCircle, Moon, Sun, Mail, Check } from 'lucide-react';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { isValidEmail } from '@/lib/validation';
+import { ArrowLeft, AlertCircle, Mail, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { ResultsHeader } from '@/components/ResultsHeader';
 import { ImageSelectionGrid, type MatchedImage } from '@/components/ImageSelectionGrid';
-
-// RFC 5322 standard compliant lightweight email regex validator
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const generateMockMatches = (seed: string): MatchedImage[] =>
     Array.from({ length: 9 }, (_, i) => ({
@@ -24,8 +22,6 @@ const generateMockMatches = (seed: string): MatchedImage[] =>
 
 export default function UploadPage() {
     const router = useRouter()
-    const { theme, setTheme } = useTheme()
-    const [mounted, setMounted] = useState(false)
     const [selectedImage, setSelectedImage] = useState<File | null>(null)
     const [eventCode, setEventCode] = useState('')
 
@@ -39,13 +35,6 @@ export default function UploadPage() {
     const [matchedImages, setMatchedImages] = useState<MatchedImage[]>([])
     const [selectedImageIds, setSelectedImageIds] = useState<string[]>([])
 
-    useEffect(() => {
-        const id = requestAnimationFrame(() => {
-            setMounted(true)
-        })
-
-        return () => cancelAnimationFrame(id)
-    }, []);
 
     const handleBackToUpload = () => {
         setShowResults(false)
@@ -56,7 +45,7 @@ export default function UploadPage() {
         setError(null)
     }
 
-    const isEmailValid = EMAIL_REGEX.test(email)
+    const isEmailValid = isValidEmail(email)
     const isEventCodeValid = eventCode.trim().length > 0
     const isPhotoSelected = !!selectedImage
 
@@ -135,19 +124,7 @@ export default function UploadPage() {
                                 <span className="hidden sm:inline">{showResults ? 'Back' : 'Home'}</span>
                             </button>
                             <h1 className="text-xl font-bold">{showResults ? 'Your Matched Photos' : 'Find Your Photos'}</h1>
-                            {mounted && (
-                                <button
-                                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                                    className="rounded-lg bg-muted p-2 transition-colors hover:bg-muted/80"
-                                    aria-label="Toggle theme"
-                                >
-                                    {theme === 'dark' ? (
-                                        <Sun className="h-5 w-5 text-accent" />
-                                    ) : (
-                                        <Moon className="h-5 w-5 text-primary" />
-                                    )}
-                                </button>
-                            )}
+                            <ThemeToggle />
                         </div>
                     </div>
                 </nav>

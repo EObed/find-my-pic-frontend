@@ -47,30 +47,28 @@ export default function EventDetailsPage() {
     const params = useParams()
     const eventId = params.id as string
     const [event, setEvent] = useState<Event | null>(null)
-    const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [isEditing, setIsEditing] = useState(false)
+    // Id of the last event whose fetch finished; loading is derived from it so the effect never sets state synchronously.
+    const [loadedEventId, setLoadedEventId] = useState<string | null>(null)
+    const isLoading = loadedEventId !== eventId
 
-    const fetchEvent = () => {
-        setIsLoading(true)
-        setTimeout(() => {
+    useEffect(() => {
+        const timeout = setTimeout(() => {
             try {
                 setEvent(generateMockEvent(eventId))
+                setError(null)
                 setIsEditing(false)
             } catch (err) {
                 console.error('Error fetching event:', err)
                 setError('Failed to load event details')
             } finally {
-                setIsLoading(false)
+                setLoadedEventId(eventId)
             }
         }, 1000)
-    }
 
-    useEffect(() => {
-        fetchEvent()
+        return () => clearTimeout(timeout)
     }, [eventId])
-
-
 
     if (isLoading) {
         return <Loader />

@@ -1,15 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import {
   Camera,
-  Moon,
-  Sun,
   ArrowRight,
   UploadCloud,
   Users,
@@ -81,16 +78,7 @@ const MOCK_EVENTS = [
 ]
 
 export default function PhotographerLandingPage() {
-  const [mounted, setMounted] = useState(false)
-  const { theme, setTheme } = useTheme()
 
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      setMounted(true)
-    })
-
-    return () => cancelAnimationFrame(id)
-  }, [])
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background transition-colors duration-300">
@@ -114,30 +102,18 @@ export default function PhotographerLandingPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              {mounted && (
-                <button
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="rounded-lg bg-muted p-2 transition-colors hover:bg-muted/80"
-                  aria-label="Toggle theme"
-                >
-                  {theme === 'dark' ? (
-                    <Sun className="h-5 w-5 text-accent" />
-                  ) : (
-                    <Moon className="h-5 w-5 text-primary" />
-                  )}
-                </button>
-              )}
+              <ThemeToggle />
               <Button
                 variant="outline"
                 className="hidden sm:inline-flex"
-                render={<Link href="/p/my-events" />}
+                render={<Link href="/p/login" />}
                 nativeButton={false}
               >
                 Sign In
               </Button>
               <Button
                 className="shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98]"
-                render={<Link href="/p/my-events" />}
+                render={<Link href="/p/signup" />}
                 nativeButton={false}
               >
                 Sign Up
@@ -176,12 +152,12 @@ export default function PhotographerLandingPage() {
               <Button
                 size="lg"
                 className="shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
-                render={<Link href="/p/my-events" />}
+                render={<Link href="/p/signup" />}
                 nativeButton={false}
               >
                 Get Started Free
               </Button>
-              <Button size="lg" variant="outline" render={<Link href="/p/my-events" />} nativeButton={false}>
+              <Button size="lg" variant="outline" render={<Link href="/p/login" />} nativeButton={false}>
                 Sign In
               </Button>
             </div>
@@ -330,7 +306,7 @@ export default function PhotographerLandingPage() {
           <Button
             size="lg"
             className="relative shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
-            render={<Link href="/p/my-events" />}
+            render={<Link href="/p/signup" />}
             nativeButton={false}
           >
             Get Started Free
