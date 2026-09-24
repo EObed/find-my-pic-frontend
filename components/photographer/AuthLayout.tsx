@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { useTheme } from 'next-themes'
-import { ArrowLeft, Camera, Moon, Sun } from 'lucide-react'
+import { ArrowLeft, Camera } from 'lucide-react'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 interface AuthLayoutProps {
     title: string
@@ -13,16 +13,7 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProps) {
-    const [mounted, setMounted] = useState(false)
-    const { theme, setTheme } = useTheme()
 
-    useEffect(() => {
-        const id = requestAnimationFrame(() => {
-            setMounted(true)
-        })
-
-        return () => cancelAnimationFrame(id)
-    }, [])
 
     return (
         <div className="relative flex min-h-screen flex-col overflow-hidden bg-background transition-colors duration-300">
@@ -47,21 +38,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
                             <span className="text-lg font-bold text-foreground">ImageFinder</span>
                         </Link>
 
-                        {mounted ? (
-                            <button
-                                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                                className="rounded-lg bg-muted p-2 transition-colors hover:bg-muted/80"
-                                aria-label="Toggle theme"
-                            >
-                                {theme === 'dark' ? (
-                                    <Sun className="h-5 w-5 text-accent" />
-                                ) : (
-                                    <Moon className="h-5 w-5 text-primary" />
-                                )}
-                            </button>
-                        ) : (
-                            <div className="h-9 w-9" />
-                        )}
+                        <ThemeToggle />
                     </div>
                 </div>
             </nav>

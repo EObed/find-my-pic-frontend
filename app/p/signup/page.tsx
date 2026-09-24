@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { GoogleIcon } from '@/components/GoogleIcon'
 import { AuthLayout } from '@/components/photographer/AuthLayout'
-
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+import { MIN_PASSWORD_LENGTH, validateSignup } from '@/lib/validation'
 
 export default function PhotographerSignupPage() {
     const router = useRouter()
@@ -28,12 +27,7 @@ export default function PhotographerSignupPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        const newErrors: Record<string, string> = {}
-        if (!firstName.trim()) newErrors.firstName = 'First name is required'
-        if (!lastName.trim()) newErrors.lastName = 'Last name is required'
-        if (!EMAIL_REGEX.test(email)) newErrors.email = 'Please enter a valid email address'
-        if (password.length < 6) newErrors.password = 'Password must be at least 6 characters'
-        if (confirmPassword !== password) newErrors.confirmPassword = 'Passwords do not match'
+        const newErrors = validateSignup({ firstName, lastName, email, password, confirmPassword })
 
         setErrors(newErrors)
         if (Object.keys(newErrors).length > 0) return
@@ -205,7 +199,7 @@ export default function PhotographerSignupPage() {
                         <Input
                             id="password"
                             type={showPassword ? 'text' : 'password'}
-                            placeholder="At least 6 characters"
+                            placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
                             value={password}
                             onChange={(e) => {
                                 setPassword(e.target.value)

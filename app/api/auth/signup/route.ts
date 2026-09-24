@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server'
 
 import { createSession } from '@/lib/session'
-
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+import { validateSignup } from '@/lib/validation'
 
 export async function POST(request: Request) {
     let body: {
@@ -25,12 +24,7 @@ export async function POST(request: Request) {
     const confirmPassword =
         typeof body.confirmPassword === 'string' ? body.confirmPassword : ''
 
-    const errors: Record<string, string> = {}
-    if (!firstName) errors.firstName = 'First name is required'
-    if (!lastName) errors.lastName = 'Last name is required'
-    if (!EMAIL_REGEX.test(email)) errors.email = 'Please enter a valid email address'
-    if (password.length < 6) errors.password = 'Password must be at least 6 characters'
-    if (confirmPassword !== password) errors.confirmPassword = 'Passwords do not match'
+    const errors = validateSignup({ firstName, lastName, email, password, confirmPassword })
     if (Object.keys(errors).length > 0) {
         return NextResponse.json({ errors }, { status: 422 })
     }

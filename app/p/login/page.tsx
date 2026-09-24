@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { GoogleIcon } from '@/components/GoogleIcon'
 import { AuthLayout } from '@/components/photographer/AuthLayout'
-
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+import { validateLogin } from '@/lib/validation'
 
 export default function PhotographerLoginPage() {
     const router = useRouter()
@@ -25,9 +24,7 @@ export default function PhotographerLoginPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        const newErrors: Record<string, string> = {}
-        if (!EMAIL_REGEX.test(email)) newErrors.email = 'Please enter a valid email address'
-        if (password.length < 6) newErrors.password = 'Password must be at least 6 characters'
+        const newErrors = validateLogin({ email, password })
 
         setErrors(newErrors)
         if (Object.keys(newErrors).length > 0) return

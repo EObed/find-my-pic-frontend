@@ -30,7 +30,7 @@ interface EventFormProps {
     onCancel: () => void
 }
 
-export function EventForm({ mode, eventId, initialData, onCancel }: EventFormProps) {
+export function EventForm({ mode, initialData, onCancel }: EventFormProps) {
     const router = useRouter()
     const [formData, setFormData] = useState({
         name: initialData?.name || '',
@@ -42,7 +42,7 @@ export function EventForm({ mode, eventId, initialData, onCancel }: EventFormPro
         initialData?.eventDate ? new Date(initialData.eventDate) : undefined
     )
     const [calendarOpen, setCalendarOpen] = useState(false)
-    const [existingImages, setExistingImages] = useState<Photo[]>(initialData?.images || [])
+    const [existingImages] = useState<Photo[]>(initialData?.images || [])
     const [pendingPhotos, setPendingPhotos] = useState<FrontEndImage[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>({})
@@ -113,7 +113,7 @@ export function EventForm({ mode, eventId, initialData, onCancel }: EventFormPro
 
             router.push('/p/my-events/001')
             router.refresh()
-        } catch (error) {
+        } catch {
             toast.error('Failed to save event. Please try again.')
         } finally {
             setIsLoading(false)
