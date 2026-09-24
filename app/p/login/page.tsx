@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { GoogleIcon } from '@/components/GoogleIcon'
 import { AuthLayout } from '@/components/photographer/AuthLayout'
-import { setItem } from '@/lib/storage'
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
 
@@ -35,25 +34,26 @@ export default function PhotographerLoginPage() {
 
         setIsLoading(true)
         try {
-            // TODO: replace with a real authentication API call
-            await new Promise((resolve) => setTimeout(resolve, 1200))
-
-            const displayName = email
-                .split('@')[0]
-                .split(/[._-]+/)
-                .filter(Boolean)
-                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-                .join(' ')
-
-            setItem('user', {
-                token: 'mock-token',
-                firstName: displayName || 'Photographer',
-                lastName: '',
-                email,
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
             })
+
+            if (!response.ok) {
+                const data = (await response.json().catch(() => null)) as
+                    | { errors?: Record<string, string> }
+                    | null
+                if (data?.errors) {
+                    setErrors(data.errors)
+                    return
+                }
+                throw new Error('Login failed')
+            }
 
             toast.success('Welcome back!')
             router.push('/p/my-events')
+            router.refresh()
         } catch {
             toast.error('Something went wrong. Please try again.')
         } finally {
