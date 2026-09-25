@@ -1,15 +1,10 @@
-'use client'
-
-import { useState, type CSSProperties } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Upload, Sparkles, Users, Download, Camera, LockKeyhole, FileStack, ArrowRight } from 'lucide-react'
-import { useRouter } from "next/navigation";
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { UploadDiagram, AnalysisDiagram, DownloadDiagram } from '@/components/landing/StepDiagrams'
+import { HowItWorksSteps } from '@/components/landing/HowItWorksSteps'
 
 const FEATURES = [
   {
@@ -44,40 +39,8 @@ const FEATURES = [
   },
 ]
 
-const STEPS = [
-  {
-    step: '01',
-    icon: Upload,
-    title: 'Upload Your Photo',
-    description: 'Take a clear selfie or photo and upload it to our platform. Any photo of yourself works.',
-    Diagram: UploadDiagram,
-  },
-  {
-    step: '02',
-    icon: Sparkles,
-    title: 'AI Analysis',
-    description: 'Our advanced AI analyzes your appearance, facial features, and clothing for accurate matching.',
-    Diagram: AnalysisDiagram,
-  },
-  {
-    step: '03',
-    icon: Download,
-    title: 'Download & Share',
-    description: 'Get your matched photos instantly and download them in high resolution.',
-    Diagram: DownloadDiagram,
-  },
-]
 
 export default function Page() {
-  const [activeStep, setActiveStep] = useState(0);
-
-  const router = useRouter();
-
-
-  function handleGetStarted () {
-    router.push("/upload");
-  }
-
   return (
       <div className="relative min-h-screen overflow-hidden bg-background transition-colors duration-300">
         <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
@@ -111,7 +74,7 @@ export default function Page() {
                 >
                   For Photographers
                 </Button>
-                <Button onClick={handleGetStarted} className="shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98]">
+                <Button render={<Link href="/upload" />} nativeButton={false} className="shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98]">
                   Get Started
                 </Button>
               </div>
@@ -144,7 +107,7 @@ export default function Page() {
               </div>
 
               <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
-                <Button onClick={handleGetStarted} size="lg" className="shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]">
+                <Button render={<Link href="/upload" />} nativeButton={false} size="lg" className="shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]">
                   Upload Your Photo
                 </Button>
                 <Button size="lg" variant="outline">
@@ -258,68 +221,7 @@ export default function Page() {
               </p>
             </div>
 
-            <div
-                className="flex flex-col gap-4 md:h-[440px] md:flex-row"
-                onMouseLeave={() => setActiveStep(0)}
-            >
-              {STEPS.map((item, i) => {
-                const isActive = activeStep === i
-                const accent = i % 2 === 0 ? 'primary' : 'accent'
-                return (
-                    <div
-                        key={i}
-                        onMouseEnter={() => setActiveStep(i)}
-                        style={{ animationDelay: `${i * 120}ms`, ['--grow' as string]: isActive ? 2.6 : 1 } as CSSProperties}
-                        className={cn(
-                            'card-lift group/step relative min-w-0 flex-1 overflow-hidden rounded-2xl border bg-card p-6 animate-in fade-in slide-in-from-bottom-2 duration-700 fill-mode-both md:flex-grow-[var(--grow)] md:p-8 md:transition-[flex-grow] md:duration-500 md:ease-in-out',
-                            isActive ? 'border-primary/40 shadow-lg' : 'border-border'
-                        )}
-                    >
-                      {/* Ambient glow */}
-                      <div
-                          className={cn(
-                              'pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full blur-3xl transition-opacity duration-700 animate-float',
-                              accent === 'primary' ? 'bg-primary/10' : 'bg-accent/10',
-                              isActive ? 'opacity-100' : 'opacity-30'
-                          )}
-                      />
-
-                      {/* Action-specific animated diagram */}
-                      <item.Diagram active={isActive} />
-
-                      <span className="pointer-events-none absolute -right-3 -bottom-6 text-[130px] leading-none font-black text-primary/[0.04] transition-all duration-500 md:-right-4 md:text-[160px] group-hover/step:text-primary/[0.08]">
-                        {item.step}
-                      </span>
-
-                      <div className="relative flex h-full flex-col justify-between md:min-h-0">
-                        <div className="flex items-center justify-between">
-                          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm">
-                            {item.step}
-                          </span>
-                          <item.icon
-                              className={cn(
-                                  'h-6 w-6 shrink-0 text-primary/50 transition-all duration-300',
-                                  isActive ? 'md:opacity-100' : 'md:opacity-0'
-                              )}
-                          />
-                        </div>
-
-                        <div className="mt-6 space-y-2 md:mt-0">
-                          <h3 className="truncate text-xl font-semibold">{item.title}</h3>
-                          <p
-                              className={cn(
-                                  'text-foreground/60 transition-all duration-500 md:max-w-xs',
-                                  isActive ? 'md:translate-y-0 md:opacity-100' : 'md:translate-y-2 md:opacity-0'
-                              )}
-                          >
-                            {item.description}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                )
-              })}
-            </div>
+            <HowItWorksSteps />
           </div>
         </section>
 
@@ -331,7 +233,7 @@ export default function Page() {
             <p className="relative mx-auto max-w-2xl text-lg text-foreground/60">
               Join thousands of users who are discovering their event photos instantly
             </p>
-            <Button onClick={handleGetStarted} size="lg" className="relative shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]">
+            <Button render={<Link href="/upload" />} nativeButton={false} size="lg" className="relative shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]">
               Start Matching Now
               <ArrowRight className="ml-1.5 h-4 w-4 transition-transform group-hover/button:translate-x-0.5" />
             </Button>
