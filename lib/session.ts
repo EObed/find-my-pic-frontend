@@ -13,7 +13,7 @@ if (!secretKey) {
 
 const encodedKey = new TextEncoder().encode(secretKey)
 
-const COOKIE_NAME = 'session'
+export const SESSION_COOKIE_NAME = 'session'
 const MAX_AGE_SECONDS = 60 * 60 * 24 * 7 // 7 days
 
 export type SessionUser = IUser
@@ -50,7 +50,7 @@ export async function createSession(user: SessionUser): Promise<void> {
     const session = await encrypt({ user, expiresAt: expiresAt.toISOString() })
 
     const cookieStore = await cookies()
-    cookieStore.set(COOKIE_NAME, session, {
+    cookieStore.set(SESSION_COOKIE_NAME, session, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -62,11 +62,11 @@ export async function createSession(user: SessionUser): Promise<void> {
 /** Reads and verifies the current session. Safe to call from Server Components. */
 export async function getSession(): Promise<SessionPayload | null> {
     const cookieStore = await cookies()
-    return decrypt(cookieStore.get(COOKIE_NAME)?.value)
+    return decrypt(cookieStore.get(SESSION_COOKIE_NAME)?.value)
 }
 
 /** Clears the session cookie. Call from a Route Handler or Server Action. */
 export async function deleteSession(): Promise<void> {
     const cookieStore = await cookies()
-    cookieStore.delete(COOKIE_NAME)
+    cookieStore.delete(SESSION_COOKIE_NAME)
 }

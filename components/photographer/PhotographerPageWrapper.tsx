@@ -2,7 +2,6 @@
 
 import { ReactNode } from "react";
 import { Camera } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 import {
     DropdownMenu,
@@ -13,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {Avatar} from "@/components/photographer/Avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { logout } from "@/actions/auth";
 
 
 type PhotographerPageWrapperProps = {
@@ -27,17 +27,6 @@ const PhotographerPageWrapper = ({
                                      children,
                                      user,
                                  }: PhotographerPageWrapperProps) => {
-
-    const router = useRouter();
-
-
-
-    const handleLogout = async () => {
-        await fetch("/api/auth/session", { method: "DELETE" });
-        router.push("/p");
-        router.refresh();
-    };
-
     return (
         <div className="min-h-screen bg-background">
             <nav className="sticky top-0 z-50 backdrop-blur-sm bg-background/80 border-b border-border">
@@ -82,7 +71,7 @@ const PhotographerPageWrapper = ({
 
                                     <DropdownMenuSeparator />
 
-                                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                                    <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
                                         Logout
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
