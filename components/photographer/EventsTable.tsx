@@ -10,41 +10,20 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
 import { Eye, Trash2, CalendarX2 } from 'lucide-react'
+import Link from 'next/link'
+import { format, parseISO } from 'date-fns'
 import IEvent from "@/interfaces/Event";
 
 interface EventsTableProps {
     events: IEvent[]
-    onView: (event: IEvent) => void
     onDelete: (event: IEvent) => void
-    isLoading?: boolean
 }
 
 export function EventsTable({
                                 events,
-                                onView,
                                 onDelete,
-                                isLoading = false,
                             }: EventsTableProps) {
-    if (isLoading) {
-        return (
-            <div className="overflow-hidden rounded-xl border border-border">
-                <div className="divide-y divide-border">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className="flex items-center gap-4 p-4">
-                            <Skeleton className="h-4 w-40" />
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-4 w-20" />
-                            <Skeleton className="h-5 w-16 rounded-full" />
-                            <Skeleton className="ml-auto h-8 w-16" />
-                        </div>
-                    ))}
-                </div>
-            </div>
-        )
-    }
-
     if (events.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border py-16 text-center animate-in fade-in duration-500">
@@ -83,11 +62,8 @@ export function EventsTable({
                                     {event.code}
                                 </TableCell>
                                 <TableCell>
-                                    {new Date(event.date).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric',
-                                    })}
+                                    {/* date-fns keeps server and client output identical, avoiding hydration mismatches */}
+                                    {format(parseISO(event.date), 'MMM d, yyyy')}
                                 </TableCell>
                                 <TableCell>
                                     <Badge
@@ -105,9 +81,10 @@ export function EventsTable({
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => onView(event)}
                                             className="h-8 w-8"
                                             title="View event"
+                                            render={<Link href={`/p/my-events/${event.id}`} />}
+                                            nativeButton={false}
                                         >
                                             <Eye className="h-4 w-4" />
                                         </Button>

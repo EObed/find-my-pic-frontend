@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ArrowLeft, CalendarIcon } from 'lucide-react'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -15,37 +15,32 @@ import { Loader } from '@/components/Loader'
 import { ImageUploadInput } from '@/components/photographer/ImageUploadInput'
 import { Textarea } from '@/components/ui/textarea'
 import {FrontEndImage, Photo} from "@/interfaces/Photo";
+import IEvent from '@/interfaces/Event'
+import { createEventAction, updateEventAction } from '@/actions/events'
 
 
-interface EventFormProps {
-    mode: 'create' | 'edit'
-    eventId?: string
-    initialData?: {
-        name: string
-        code: string
-        eventDate: string
-        description: string
-        images: Photo[]
-    }
-    onCancel: () => void
-}
+type EventFormProps =
+    | { mode: 'create'; event?: undefined }
+    | { mode: 'edit'; event: IEvent }
 
-export function EventForm({ mode, initialData, onCancel }: EventFormProps) {
+export function EventForm({ mode, event }: EventFormProps) {
     const router = useRouter()
     const [formData, setFormData] = useState({
-        name: initialData?.name || '',
-        code: initialData?.code || '',
-        description: initialData?.description || '',
+        name: event?.name || '',
+        code: event?.code || '',
+        description: event?.description || '',
     })
-    // Store date as a Date object for the calendar
+    // Store date as a Date object for the calendar; parseISO keeps yyyy-MM-dd in local time.
     const [eventDate, setEventDate] = useState<Date | undefined>(
-        initialData?.eventDate ? new Date(initialData.eventDate) : undefined
+        event?.date ? parseISO(event.date) : undefined
     )
     const [calendarOpen, setCalendarOpen] = useState(false)
-    const [existingImages] = useState<Photo[]>(initialData?.images || [])
+    const [existingImages] = useState<Photo[]>(event?.photos || [])
     const [pendingPhotos, setPendingPhotos] = useState<FrontEndImage[]>([])
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, startTransition] = useTransition()
     const [errors, setErrors] = useState<Record<string, string>>({})
+
+    const cancelHref = event ? `/p/my-events/${event.id}` : '/p/my-events'
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {}
@@ -65,67 +60,45 @@ export function EventForm({ mode, initialData, onCancel }: EventFormProps) {
     }
 
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (!validateForm()) {
             toast.error('Please fix the errors in the form')
             return
         }
 
-        setIsLoading(true)
-
-        try {
-            // TODO: replace with real API call when ready
-            // const data = new FormData()
-            // data.append('name', formData.name)
-            // data.append('code', formData.code.toUpperCase())
-            // data.append('eventDate', eventDate ? eventDate.toISOString() : '')
-            // data.append('description', formData.description)
-            // const existingBlobs = await Promise.all(
-            //     existingImages.map(async (img) => {
-            //         const res = await fetch(img.file)
-            //         const blob = await res.blob()
-            //         return new File([blob], img.id, { type: blob.type })
-            //     })
-            // )
-            //
-            // // Convert pending File objects to Blobs
-            // const pendingBlobs = await Promise.all(
-            //         pendingPhotos.map(async (p) => {
-            //             const blob = new Blob([await p.file.arrayBuffer()], { type: p.file.type })
-            //             return new File([blob], p.file.name, { type: p.file.type })
-            //         })
-            //     )
-            //
-            // ;[...existingBlobs, ...pendingBlobs]
-            //     .forEach((file) => data.append('images', file))
-            // const url = mode === 'create' ? '/api/events' : `/api/events/${eventId}`
-            // const response = await fetch(url, { method: mode === 'create' ? 'POST' : 'PATCH', body: data })
-            // if (!response.ok) throw new Error(await response.text())
-
-            await new Promise((resolve) => setTimeout(resolve, 3000))
-
-            toast.success(
-                mode === 'create'
-                    ? 'Event created successfully'
-                    : 'Event updated successfully'
-            )
-
-            router.push('/p/my-events/001')
-            router.refresh()
-        } catch {
-            toast.error('Failed to save event. Please try again.')
-        } finally {
-            setIsLoading(false)
+        const input = {
+            name: formData.name,
+            code: formData.code,
+            date: eventDate ? format(eventDate, 'yyyy-MM-dd') : '',
+            description: formData.description,
         }
+
+        startTransition(async () => {
+            // TODO(api): upload pendingPhotos directly to storage — see actions/events.ts.
+            const result = event
+                ? await updateEventAction(event.id, input)
+                : await createEventAction(input)
+
+            if (result.ok === false) {
+                if (result.errors) setErrors(result.errors)
+                toast.error(result.message ?? 'Failed to save event. Please try again.')
+                return
+            }
+
+            toast.success(mode === 'create' ? 'Event created successfully' : 'Event updated successfully')
+            router.push(`/p/my-events/${result.data.id}`)
+        })
     }
 
     return (
         <>
             {isLoading &&
                 <Loader
-                    title={"Creating event"}
-                    description={"Please standby while we create your event."}
+                    title={mode === 'create' ? 'Creating event' : 'Saving changes'}
+                    description={mode === 'create'
+                        ? 'Please standby while we create your event.'
+                        : 'Please standby while we update your event.'}
             />}
         <div className="min-h-screen bg-background pb-24">
             {/* Header */}
@@ -133,7 +106,7 @@ export function EventForm({ mode, initialData, onCancel }: EventFormProps) {
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <Link
-                            href="/p/my-events"
+                            href={cancelHref}
                             className="flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors"
                         >
                             <ArrowLeft className="w-5 h-5" />
@@ -255,7 +228,7 @@ export function EventForm({ mode, initialData, onCancel }: EventFormProps) {
             {/* Sticky footer actions */}
             <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-t border-border">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex gap-4 justify-end">
-                    <Button type="button" onClick={onCancel} variant="outline">Cancel</Button>
+                    <Button variant="outline" render={<Link href={cancelHref} />} nativeButton={false}>Cancel</Button>
                     <Button
                         type="submit"
                         form="event-form"

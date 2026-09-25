@@ -1,9 +1,8 @@
-'use client'
+import type { Metadata } from 'next'
+import { EventForm } from '@/components/photographer/EventForm'
 
-import { useRouter } from 'next/navigation'
-import {EventForm} from "@/components/photographer/EventForm";
+export const metadata: Metadata = { title: 'Create Event' }
 
 export default function CreateEventPage() {
-    const router = useRouter()
-    return <EventForm mode="create" onCancel={() => router.push('/p/my-events')} />
+    return <EventForm mode="create" />
 }

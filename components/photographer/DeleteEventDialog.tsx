@@ -1,4 +1,6 @@
-import { useState } from 'react'
+'use client'
+
+import { useTransition } from 'react'
 import {
     AlertDialog,
     AlertDialogAction,
@@ -10,6 +12,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { AlertTriangle } from 'lucide-react'
 import {toast} from "sonner";
+import { deleteEventAction } from '@/actions/events'
 
 interface DeleteEventDialogProps {
     open: boolean
@@ -18,40 +21,28 @@ interface DeleteEventDialogProps {
         id: string
         name: string
     } | null
-    onSuccess: () => void
 }
 
 export function DeleteEventDialog({
                                       open,
                                       onOpenChange,
                                       event,
-                                      onSuccess,
                                   }: DeleteEventDialogProps) {
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoading, startTransition] = useTransition()
 
     if (!event) return null
 
-    const handleDelete = async () => {
-        setIsLoading(true)
-
-        try {
-            const response = await fetch(`/api/events/${event.id}`, {
-                method: 'DELETE',
-            })
-
-            if (!response.ok) {
-                throw new Error('Failed to delete event')
+    const handleDelete = () => {
+        startTransition(async () => {
+            // The action revalidates /p/my-events, so the list re-renders without the event.
+            const result = await deleteEventAction(event.id)
+            if (result.ok === false) {
+                toast.error(result.message ?? 'Failed to delete event. Please try again.')
+                return
             }
-
             toast.success('Event deleted successfully')
             onOpenChange(false)
-            onSuccess()
-        } catch (error) {
-            console.error('Error deleting event:', error)
-            toast.error('Failed to delete event. Please try again.')
-        } finally {
-            setIsLoading(false)
-        }
+        })
     }
 
     return (

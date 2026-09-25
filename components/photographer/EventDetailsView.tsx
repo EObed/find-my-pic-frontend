@@ -1,43 +1,19 @@
-'use client'
-
-import { useMemo } from 'react'
+import Link from 'next/link'
+import { format, parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Calendar, FileText, Images, CheckCircle, AlertCircle, Pencil } from 'lucide-react'
+import IEvent from '@/interfaces/Event'
 
-interface EventDetailsViewProps {
-    event: {
-        id: string
-        name: string
-        code: string
-        eventDate: string
-        description: string
-        photoCount: number
-        createdAt?: string | Date
-    }
-    onEdit: () => void
-}
-
-export function EventDetailsView({ event, onEdit }: EventDetailsViewProps) {
+// Server component: rendered once on the server, so it ships no JavaScript to the browser.
+export function EventDetailsView({ event }: { event: IEvent }) {
     // Mock statistics - in production these would come from the backend.
-    // Derived deterministically from the event id so renders stay stable (no Math.random during render).
-    const { attemptedMatches, successfulMatches, successRate } = useMemo(() => {
-        const seed = event.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-        const attempted = (seed * 37) % 500 + 100
-        const successful = Math.floor(attempted * 0.65)
-        const rate = Math.round((successful / attempted) * 100)
-        return { attemptedMatches: attempted, successfulMatches: successful, successRate: rate }
-    }, [event.id])
+    // Derived deterministically from the event id so renders stay stable.
+    const seed = event.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    const attemptedMatches = (seed * 37) % 500 + 100
+    const successfulMatches = Math.floor(attemptedMatches * 0.65)
+    const successRate = Math.round((successfulMatches / attemptedMatches) * 100)
 
-    const formatDate = (date: string | Date | undefined) => {
-        if (!date) return 'N/A'
-        const dateObj = typeof date === 'string' ? new Date(date) : date
-        return dateObj.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-        })
-    }
+    const formatDate = (date: string) => format(parseISO(date), 'EEEE, MMMM d, yyyy')
 
     return (
         <div className="space-y-8">
@@ -48,7 +24,8 @@ export function EventDetailsView({ event, onEdit }: EventDetailsViewProps) {
                     <p className="mt-1 text-foreground/60">Event Gallery</p>
                 </div>
                 <Button
-                    onClick={onEdit}
+                    render={<Link href={`/p/my-events/${event.id}/edit`} />}
+                    nativeButton={false}
                     className="w-full shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98] sm:w-auto"
                 >
                     <Pencil className="mr-2 h-4 w-4" />
@@ -76,7 +53,7 @@ export function EventDetailsView({ event, onEdit }: EventDetailsViewProps) {
                                 <Calendar className="h-4 w-4" />
                                 Event Date
                             </p>
-                            <p className="text-sm text-foreground">{formatDate(event.eventDate)}</p>
+                            <p className="text-sm text-foreground">{formatDate(event.date)}</p>
                         </div>
 
                         {event.description && (
