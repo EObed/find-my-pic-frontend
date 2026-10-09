@@ -11,6 +11,9 @@ import { ArrowLeft, AlertCircle, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { ResultsHeader } from '@/components/ResultsHeader';
 import { ImageSelectionGrid, type MatchedImage } from '@/components/ImageSelectionGrid';
+import { PhotographerCredit } from '@/components/PhotographerCredit';
+import { generateMockPhotographer } from '@/lib/mockPhotographer';
+import type { PhotographerSummary } from '@/interfaces/Photographer';
 
 const generateMockMatches = (seed: string): MatchedImage[] =>
     Array.from({ length: 9 }, (_, i) => ({
@@ -30,12 +33,14 @@ export default function UploadPage() {
     const [showResults, setShowResults] = useState(false)
     const [matchedImages, setMatchedImages] = useState<MatchedImage[]>([])
     const [selectedImageIds, setSelectedImageIds] = useState<string[]>([])
+    const [photographer, setPhotographer] = useState<PhotographerSummary | null>(null)
 
 
     const handleBackToUpload = () => {
         setShowResults(false)
         setMatchedImages([])
         setSelectedImageIds([])
+        setPhotographer(null)
         setSelectedImage(null)
         setEventCode('')
         setError(null)
@@ -72,7 +77,9 @@ export default function UploadPage() {
             await new Promise((resolve) => setTimeout(resolve, 2200))
 
             const matches = generateMockMatches(eventCode)
+            const { id, name, avatarUrl } = generateMockPhotographer('ph-001')
             setMatchedImages(matches)
+            setPhotographer({ id, name, avatarUrl })
             setSelectedImageIds([])
             setShowResults(true)
         } catch {
@@ -141,6 +148,8 @@ export default function UploadPage() {
                                 onImageSelect={handleImageSelection}
                                 isLoading={false}
                             />
+
+                            {photographer && <PhotographerCredit photographer={photographer} />}
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-8">
