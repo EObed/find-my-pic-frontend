@@ -7,8 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ImageInput } from '@/components/ImageInput';
 import { Loader } from '@/components/Loader';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { isValidEmail } from '@/lib/validation';
-import { ArrowLeft, AlertCircle, Mail, Check } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { ResultsHeader } from '@/components/ResultsHeader';
 import { ImageSelectionGrid, type MatchedImage } from '@/components/ImageSelectionGrid';
@@ -24,9 +23,6 @@ export default function UploadPage() {
     const router = useRouter()
     const [selectedImage, setSelectedImage] = useState<File | null>(null)
     const [eventCode, setEventCode] = useState('')
-
-    const [email, setEmail] = useState('')
-    const [emailTouched, setEmailTouched] = useState(false)
 
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -45,12 +41,10 @@ export default function UploadPage() {
         setError(null)
     }
 
-    const isEmailValid = isValidEmail(email)
     const isEventCodeValid = eventCode.trim().length > 0
     const isPhotoSelected = !!selectedImage
 
     const steps = [
-        { label: 'Email', done: isEmailValid },
         { label: 'Event code', done: isEventCodeValid },
         { label: 'Photo', done: isPhotoSelected },
     ]
@@ -77,7 +71,7 @@ export default function UploadPage() {
             // TODO: replace with real matching API call
             await new Promise((resolve) => setTimeout(resolve, 2200))
 
-            const matches = generateMockMatches(eventCode || email)
+            const matches = generateMockMatches(eventCode)
             setMatchedImages(matches)
             setSelectedImageIds([])
             setShowResults(true)
@@ -175,7 +169,7 @@ export default function UploadPage() {
                                 <ol className="space-y-2 text-sm text-muted-foreground">
                                     <li className="flex gap-3">
                                         <span className="min-w-6 font-semibold text-primary">1.</span>
-                                        <span>Enter your email and the code provided by the photographer</span>
+                                        <span>Enter the event code provided by the photographer</span>
                                     </li>
                                     <li className="flex gap-3">
                                         <span className="min-w-6 font-semibold text-primary">2.</span>
@@ -188,50 +182,8 @@ export default function UploadPage() {
                                 </ol>
                             </div>
 
-                            {/* Email Input Section */}
-                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-75 fill-mode-both">
-                                <div className="space-y-2">
-                                    <label htmlFor="email" className="block text-sm font-semibold text-foreground">
-                                        Email Address <span className="text-primary">*</span>
-                                    </label>
-                                    <div className="relative">
-                                        <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            placeholder="you@example.com"
-                                            value={email}
-                                            onChange={(e) => {
-                                                setEmail(e.target.value)
-                                                setError(null)
-                                            }}
-                                            onBlur={() => setEmailTouched(true)}
-                                            disabled={isLoading}
-                                            className={`bg-card pl-10 ${
-                                                emailTouched && !isEmailValid
-                                                    ? 'border-destructive focus-visible:ring-destructive'
-                                                    : 'border-border focus-visible:ring-primary'
-                                            }`}
-                                        />
-                                    </div>
-                                    {emailTouched && !isEmailValid && (
-                                        <p className="mt-1 flex items-center gap-1 text-xs text-destructive">
-                                            <AlertCircle className="h-3 w-3" /> Please enter a valid email address.
-                                        </p>
-                                    )}
-                                </div>
-
-                                {/* Explanatory Note */}
-                                <div className="flex gap-3 rounded-xl border border-primary/10 bg-primary/5 p-3.5">
-                                    <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                                    <p className="text-xs leading-relaxed text-foreground/80">
-                                        <strong>Important Note:</strong> Please use a correct and valid email. A secure link to download your high-resolution matched event pictures will be sent directly to this inbox.
-                                    </p>
-                                </div>
-                            </div>
-
                             {/* Event Code Section */}
-                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both">
+                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-75 fill-mode-both">
                                 <label htmlFor="eventCode" className="block text-sm font-semibold text-foreground">
                                     Event Code <span className="text-primary">*</span>
                                 </label>
@@ -253,14 +205,14 @@ export default function UploadPage() {
                             </div>
 
                             {/* Image Input Section */}
-                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 fill-mode-both">
+                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both">
                                 <div>
                                     <label className="mb-3 block text-sm font-semibold text-foreground">
                                         Your Photo <span className="text-primary">*</span>
                                     </label>
                                     <ImageInput
                                         onImageSelected={handleImageSelected}
-                                        disabled={isLoading || !isEmailValid}
+                                        disabled={isLoading}
                                     />
                                 </div>
                             </div>
@@ -286,7 +238,7 @@ export default function UploadPage() {
                                 </Button>
                                 <Button
                                     type="submit"
-                                    disabled={isLoading || !selectedImage || !eventCode.trim() || !isEmailValid}
+                                    disabled={isLoading || !selectedImage || !eventCode.trim()}
                                     className="flex-1 shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98]"
                                 >
                                     {isLoading ? 'Processing...' : 'Find My Photos'}
