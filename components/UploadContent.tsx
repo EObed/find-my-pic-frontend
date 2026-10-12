@@ -1,14 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { ImageInput } from '@/components/ImageInput';
 import { Loader } from '@/components/Loader';
+import { Logo } from '@/components/Logo';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { isValidEmail } from '@/lib/validation';
-import { ArrowLeft, AlertCircle, Mail, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { ArrowLeft, AlertCircle, Mail, Check, Hash, ImageIcon, Lightbulb } from 'lucide-react';
 import { toast } from 'sonner';
 import { ResultsHeader } from '@/components/ResultsHeader';
 import { ImageSelectionGrid, type MatchedImage } from '@/components/ImageSelectionGrid';
@@ -20,10 +22,11 @@ const generateMockMatches = (seed: string): MatchedImage[] =>
         matchScore: Math.floor(Math.random() * 24) + 75,
     })).sort((a, b) => b.matchScore - a.matchScore)
 
-export function UploadContent() {
-    const router = useRouter()
+const TIPS = ['Face the camera in good light', 'Remove sunglasses or hats', 'Make sure you are the only person in the shot']
+
+export function UploadContent({ initialCode = '' }: { initialCode?: string }) {
     const [selectedImage, setSelectedImage] = useState<File | null>(null)
-    const [eventCode, setEventCode] = useState('')
+    const [eventCode, setEventCode] = useState(initialCode)
 
     const [email, setEmail] = useState('')
     const [emailTouched, setEmailTouched] = useState(false)
@@ -35,13 +38,11 @@ export function UploadContent() {
     const [matchedImages, setMatchedImages] = useState<MatchedImage[]>([])
     const [selectedImageIds, setSelectedImageIds] = useState<string[]>([])
 
-
     const handleBackToUpload = () => {
         setShowResults(false)
         setMatchedImages([])
         setSelectedImageIds([])
         setSelectedImage(null)
-        setEventCode('')
         setError(null)
     }
 
@@ -50,10 +51,11 @@ export function UploadContent() {
     const isPhotoSelected = !!selectedImage
 
     const steps = [
-        { label: 'Email', done: isEmailValid },
-        { label: 'Event code', done: isEventCodeValid },
-        { label: 'Photo', done: isPhotoSelected },
+        { label: 'Email', done: isEmailValid, icon: Mail },
+        { label: 'Event code', done: isEventCodeValid, icon: Hash },
+        { label: 'Photo', done: isPhotoSelected, icon: ImageIcon },
     ]
+    const completed = steps.filter((step) => step.done).length
 
     const handleImageSelected = (file: File) => {
         setSelectedImage(file)
@@ -66,6 +68,10 @@ export function UploadContent() {
                 ? prev.filter((id) => id !== imageId)
                 : [...prev, imageId]
         )
+    }
+
+    const handleToggleAll = () => {
+        setSelectedImageIds((prev) => (prev.length === matchedImages.length ? [] : matchedImages.map((img) => img.id)))
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -81,6 +87,7 @@ export function UploadContent() {
             setMatchedImages(matches)
             setSelectedImageIds([])
             setShowResults(true)
+            window.scrollTo({ top: 0, behavior: 'smooth' })
         } catch {
             setError('Something went wrong while searching for your photos. Please try again.')
         } finally {
@@ -108,29 +115,31 @@ export function UploadContent() {
                 />
             )}
 
-            <div className="relative min-h-screen overflow-hidden bg-background transition-colors duration-300">
-                <div className="pointer-events-none absolute -top-32 -right-24 h-80 w-80 rounded-full bg-primary/10 blur-3xl animate-float" />
-                <div className="pointer-events-none absolute top-1/2 -left-32 h-72 w-72 rounded-full bg-accent/10 blur-3xl animate-float-slow" />
+            <div className="relative min-h-screen overflow-x-clip bg-background">
+                <div className="bg-dots pointer-events-none absolute inset-x-0 top-0 h-96" />
+                <div className="pointer-events-none absolute -top-40 -right-24 h-[420px] w-[420px] rounded-full bg-primary/15 blur-[110px]" />
+                <div className="pointer-events-none absolute top-1/2 -left-32 h-80 w-80 rounded-full bg-accent/15 blur-[110px]" />
 
                 {/* Navigation */}
-                <nav className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm">
-                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div className="flex h-16 items-center justify-between">
+                <nav className="glass sticky top-0 z-40 border-b border-border">
+                    <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+                        {showResults ? (
                             <button
-                                onClick={showResults ? handleBackToUpload : () => router.push('/')}
-                                className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+                                type="button"
+                                onClick={handleBackToUpload}
+                                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                             >
-                                <ArrowLeft className="h-5 w-5" />
-                                <span className="hidden sm:inline">{showResults ? 'Back' : 'Home'}</span>
+                                <ArrowLeft className="h-4 w-4" />
+                                New search
                             </button>
-                            <h1 className="text-xl font-bold">{showResults ? 'Your Matched Photos' : 'Find Your Photos'}</h1>
-                            <ThemeToggle />
-                        </div>
+                        ) : (
+                            <Logo />
+                        )}
+                        <ThemeToggle />
                     </div>
                 </nav>
 
-                {/* Main Content */}
-                <div className={`relative mx-auto ${showResults ? 'max-w-7xl' : 'max-w-3xl'} px-4 py-12 sm:px-6 sm:py-16 lg:px-8`}>
+                <div className={cn('relative mx-auto px-4 py-10 sm:px-6 sm:py-14 lg:px-8', showResults ? 'max-w-7xl' : 'max-w-2xl')}>
                     {showResults ? (
                         <div className="space-y-8 animate-in fade-in duration-500">
                             <ResultsHeader
@@ -138,6 +147,7 @@ export function UploadContent() {
                                 selectedCount={selectedImageIds.length}
                                 onDownload={() => handleDownload(false)}
                                 onDownloadAll={() => handleDownload(true)}
+                                onToggleAll={handleToggleAll}
                                 isLoadingResults={false}
                             />
 
@@ -149,50 +159,44 @@ export function UploadContent() {
                             />
                         </div>
                     ) : (
-                        <form onSubmit={handleSubmit} className="space-y-8">
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="space-y-3 text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <h1 className="text-4xl font-semibold sm:text-5xl">Find your photos</h1>
+                                <p className="text-muted-foreground">Three quick details and we&apos;ll search the event gallery for you.</p>
+                            </div>
+
                             {/* Step progress */}
-                            <div className="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top-2 duration-500">
-                                {steps.map((step, i) => (
-                                    <div key={step.label} className="flex items-center gap-2">
-                                        <div
-                                            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                                                step.done
-                                                    ? 'border-primary/30 bg-primary/10 text-primary'
-                                                    : 'border-border text-muted-foreground'
-                                            }`}
-                                        >
-                                            {step.done ? <Check className="h-3.5 w-3.5" /> : <span className="h-3.5 w-3.5 text-center leading-none">{i + 1}</span>}
-                                            {step.label}
+                            <div className="rounded-2xl border border-border bg-card/70 p-4 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-2 duration-500 delay-75 fill-mode-both">
+                                <div className="flex items-center justify-between gap-2">
+                                    {steps.map((step) => (
+                                        <div key={step.label} className="flex items-center gap-2 text-sm">
+                                            <span
+                                                className={cn(
+                                                    'flex h-7 w-7 items-center justify-center rounded-full transition-all duration-300',
+                                                    step.done ? 'scale-100 bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                                                )}
+                                            >
+                                                {step.done ? <Check className="h-3.5 w-3.5 animate-in zoom-in duration-300" /> : <step.icon className="h-3.5 w-3.5" />}
+                                            </span>
+                                            <span className={cn('font-medium transition-colors', step.done ? 'text-foreground' : 'text-muted-foreground')}>
+                                                {step.label}
+                                            </span>
                                         </div>
-                                        {i < steps.length - 1 && <div className="h-px w-4 bg-border" />}
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
+                                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted">
+                                    <div
+                                        className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-[width] duration-500 ease-out"
+                                        style={{ width: `${(completed / steps.length) * 100}%` }}
+                                    />
+                                </div>
                             </div>
 
-                            {/* Instructions */}
-                            <div className="card-lift space-y-3 rounded-2xl border border-border bg-card p-6 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                <h2 className="text-lg font-semibold">How to find your photos:</h2>
-                                <ol className="space-y-2 text-sm text-muted-foreground">
-                                    <li className="flex gap-3">
-                                        <span className="min-w-6 font-semibold text-primary">1.</span>
-                                        <span>Enter your email and the code provided by the photographer</span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <span className="min-w-6 font-semibold text-primary">2.</span>
-                                        <span>Upload a clear photo or take a live picture of yourself</span>
-                                    </li>
-                                    <li className="flex gap-3">
-                                        <span className="min-w-6 font-semibold text-primary">3.</span>
-                                        <span>Wait for our AI to find matching photos from the event</span>
-                                    </li>
-                                </ol>
-                            </div>
-
-                            {/* Email Input Section */}
-                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-75 fill-mode-both">
+                            {/* Details */}
+                            <div className="space-y-5 rounded-2xl border border-border bg-card/80 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
                                 <div className="space-y-2">
-                                    <label htmlFor="email" className="block text-sm font-semibold text-foreground">
-                                        Email Address <span className="text-primary">*</span>
+                                    <label htmlFor="email" className="block text-sm font-medium text-foreground">
+                                        Email address
                                     </label>
                                     <div className="relative">
                                         <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -207,96 +211,84 @@ export function UploadContent() {
                                             }}
                                             onBlur={() => setEmailTouched(true)}
                                             disabled={isLoading}
-                                            className={`bg-card pl-10 ${
-                                                emailTouched && !isEmailValid
-                                                    ? 'border-destructive focus-visible:ring-destructive'
-                                                    : 'border-border focus-visible:ring-primary'
-                                            }`}
+                                            aria-invalid={emailTouched && !isEmailValid}
+                                            className="pl-10"
                                         />
                                     </div>
-                                    {emailTouched && !isEmailValid && (
-                                        <p className="mt-1 flex items-center gap-1 text-xs text-destructive">
+                                    {emailTouched && !isEmailValid ? (
+                                        <p className="flex items-center gap-1 text-xs text-destructive">
                                             <AlertCircle className="h-3 w-3" /> Please enter a valid email address.
                                         </p>
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground">We&apos;ll send a secure link to your full-resolution photos here.</p>
                                     )}
                                 </div>
 
-                                {/* Explanatory Note */}
-                                <div className="flex gap-3 rounded-xl border border-primary/10 bg-primary/5 p-3.5">
-                                    <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                                    <p className="text-xs leading-relaxed text-foreground/80">
-                                        <strong>Important Note:</strong> Please use a correct and valid email. A secure link to download your high-resolution matched event pictures will be sent directly to this inbox.
-                                    </p>
+                                <div className="space-y-2">
+                                    <label htmlFor="eventCode" className="block text-sm font-medium text-foreground">
+                                        Event code
+                                    </label>
+                                    <div className="relative">
+                                        <Hash className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            id="eventCode"
+                                            type="text"
+                                            placeholder="e.g. WEDDING2026"
+                                            value={eventCode}
+                                            onChange={(e) => {
+                                                setEventCode(e.target.value.toUpperCase())
+                                                setError(null)
+                                            }}
+                                            disabled={isLoading}
+                                            autoCapitalize="characters"
+                                            className="pl-10 font-mono tracking-wider"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">Your photographer shares this code with guests.</p>
                                 </div>
                             </div>
 
-                            {/* Event Code Section */}
-                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both">
-                                <label htmlFor="eventCode" className="block text-sm font-semibold text-foreground">
-                                    Event Code <span className="text-primary">*</span>
-                                </label>
-                                <Input
-                                    id="eventCode"
-                                    type="text"
-                                    placeholder="Enter the event code (e.g., WEDDING2026)"
-                                    value={eventCode}
-                                    onChange={(e) => {
-                                        setEventCode(e.target.value)
-                                        setError(null)
-                                    }}
-                                    disabled={isLoading}
-                                    className="border-border bg-card focus:border-primary"
-                                />
-                                <p className="text-xs text-muted-foreground">
-                                    Ask the photographer for the event code to find your photos
-                                </p>
-                            </div>
-
-                            {/* Image Input Section */}
-                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-200 fill-mode-both">
+                            {/* Photo */}
+                            <div className="space-y-4 rounded-2xl border border-border bg-card/80 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both">
                                 <div>
-                                    <label className="mb-3 block text-sm font-semibold text-foreground">
-                                        Your Photo <span className="text-primary">*</span>
-                                    </label>
-                                    <ImageInput
-                                        onImageSelected={handleImageSelected}
-                                        disabled={isLoading || !isEmailValid}
-                                    />
+                                    <p className="text-sm font-medium text-foreground">Your photo</p>
+                                    {!isEmailValid && (
+                                        <p className="text-xs text-muted-foreground">Enter a valid email first to unlock this step.</p>
+                                    )}
+                                </div>
+                                <ImageInput onImageSelected={handleImageSelected} disabled={isLoading || !isEmailValid} />
+
+                                <div className="flex gap-3 rounded-xl bg-primary/5 p-3.5">
+                                    <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                                    <ul className="space-y-1 text-xs text-foreground/80">
+                                        {TIPS.map((tip) => (
+                                            <li key={tip}>{tip}</li>
+                                        ))}
+                                    </ul>
                                 </div>
                             </div>
 
                             {/* Error Message */}
                             {error && (
-                                <div className="flex gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4 animate-in fade-in">
+                                <div className="flex gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 animate-in fade-in">
                                     <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
                                     <p className="text-sm text-destructive">{error}</p>
                                 </div>
                             )}
 
-                            {/* Submit Button */}
-                            <div className="flex gap-3 pt-4">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="flex-1"
-                                    onClick={() => router.back()}
-                                    disabled={isLoading}
-                                >
+                            {/* Submit */}
+                            <div className="flex flex-col-reverse gap-3 sm:flex-row">
+                                <Button type="button" variant="outline" size="lg" className="sm:flex-1" render={<Link href="/" />} nativeButton={false}>
                                     Cancel
                                 </Button>
                                 <Button
                                     type="submit"
-                                    disabled={isLoading || !selectedImage || !eventCode.trim() || !isEmailValid}
-                                    className="flex-1 shadow-sm transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98]"
+                                    size="lg"
+                                    disabled={isLoading || !selectedImage || !isEventCodeValid || !isEmailValid}
+                                    className="sm:flex-[2]"
                                 >
-                                    {isLoading ? 'Processing...' : 'Find My Photos'}
+                                    {isLoading ? 'Searching…' : completed === steps.length ? 'Find my photos' : `${steps.length - completed} step${steps.length - completed === 1 ? '' : 's'} to go`}
                                 </Button>
-                            </div>
-
-                            <div className="mt-12 space-y-2 rounded-xl border border-border bg-muted/50 p-6 text-center">
-                                <p className="text-sm text-muted-foreground">
-                                    <span className="font-semibold text-foreground">Tip:</span> Use a clear, well-lit photo for better matching accuracy
-                                </p>
                             </div>
                         </form>
                     )}

@@ -3,6 +3,8 @@
 import { useState, useRef } from 'react'
 import { Upload, Camera, X, RefreshCw, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 interface ImageInputProps {
     onImageSelected: (file: File) => void
@@ -17,6 +19,7 @@ export function ImageInput({ onImageSelected, disabled = false }: ImageInputProp
 
     // Track whether we are using the 'user' (front) or 'environment' (back) camera
     const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user')
+    const [isDragging, setIsDragging] = useState(false)
 
     const fileInputRef = useRef<HTMLInputElement>(null)
     const videoRef = useRef<HTMLVideoElement>(null)
@@ -25,7 +28,7 @@ export function ImageInput({ onImageSelected, disabled = false }: ImageInputProp
     // --- File System Handlers ---
     const handleFileSelect = (file: File) => {
         if (!file.type.startsWith('image/')) {
-            alert('Please select an image file')
+            toast.error('Please choose an image file')
             return
         }
 
@@ -232,15 +235,29 @@ export function ImageInput({ onImageSelected, disabled = false }: ImageInputProp
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={disabled}
-                    className="card-lift group relative rounded-2xl border-2 border-dashed border-primary/30 bg-card p-6 transition-colors hover:border-primary/60 hover:bg-primary/5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+                    onDragOver={(e) => {
+                        e.preventDefault()
+                        if (!disabled) setIsDragging(true)
+                    }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={(e) => {
+                        e.preventDefault()
+                        setIsDragging(false)
+                        const file = e.dataTransfer.files?.[0]
+                        if (file && !disabled) handleFileSelect(file)
+                    }}
+                    className={cn(
+                        'card-lift group relative rounded-2xl border-2 border-dashed border-primary/30 bg-card p-6 transition-colors hover:border-primary/60 hover:bg-primary/5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50',
+                        isDragging && 'scale-[1.02] border-primary bg-primary/10'
+                    )}
                 >
                     <div className="flex flex-col items-center gap-3 text-center">
                         <div className="rounded-xl bg-primary/10 p-3 transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/20">
                             <Upload className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                            <p className="font-semibold text-foreground">Upload Photo</p>
-                            <p className="text-xs text-muted-foreground">Browse your files</p>
+                            <p className="font-semibold text-foreground">{isDragging ? 'Drop it here' : 'Upload photo'}</p>
+                            <p className="text-xs text-muted-foreground">Browse or drag &amp; drop</p>
                         </div>
                     </div>
                 </button>
@@ -256,7 +273,7 @@ export function ImageInput({ onImageSelected, disabled = false }: ImageInputProp
                             <Camera className="h-6 w-6 text-accent" />
                         </div>
                         <div>
-                            <p className="font-semibold text-foreground">Take Photo</p>
+                            <p className="font-semibold text-foreground">Take a selfie</p>
                             <p className="text-xs text-muted-foreground">Use your camera</p>
                         </div>
                     </div>
