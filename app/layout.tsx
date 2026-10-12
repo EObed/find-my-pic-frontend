@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import { Poppins, Inter } from 'next/font/google'
+import { Geist, Geist_Mono } from 'next/font/google'
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import {ThemeProvider} from "@/components/ThemeProvider";
 import {Toaster} from "@/components/ui/sonner";
 import TanstackQueryProvider from "@/providers/TanstackQueryProvider";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
-
-const poppins = Poppins({ subsets: ["latin"], weight: ['400', '500', '600', '700', '800', '900'] });
+const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' });
+const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' });
 
 export const metadata: Metadata = {
   title: { default: "Find My Pic", template: "%s | Find My Pic" },
@@ -23,7 +22,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", poppins.className, "font-sans", inter.variable)}
+      className={cn("h-full scroll-smooth antialiased font-sans", geistSans.variable, geistMono.variable)}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">

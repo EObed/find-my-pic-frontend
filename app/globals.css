@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #eef2fb;
+  --background: #f5f7fc;
   --foreground: #2b3651;
   --card: #ffffff;
   --card-foreground: #2b3651;
@@ -20,15 +20,15 @@
   --accent-foreground: #1c3a49;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: #b3caea;
-  --input: #dce6f6;
+  --border: #d6e0f0;
+  --input: #d6e0f0;
   --ring: #3f6bc4;
   --chart-1: #3f6bc4;
   --chart-2: #6f9fd8;
   --chart-3: #6fc4dd;
   --chart-4: #2c4d92;
   --chart-5: #3f9fc4;
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: #eef2fb;
   --sidebar-foreground: #2b3651;
   --sidebar-primary: #3f6bc4;
@@ -40,11 +40,11 @@
 }
 
 .dark {
-  --background: #121a2c;
+  --background: #0d1322;
   --foreground: #e7eef8;
-  --card: #1b2740;
+  --card: #152036;
   --card-foreground: #e7eef8;
-  --popover: #1b2740;
+  --popover: #152036;
   --popover-foreground: #e7eef8;
   --primary: #7f9fe0;
   --primary-foreground: #121a2c;
@@ -56,8 +56,8 @@
   --accent-foreground: #121a2c;
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: #2e3c5c;
-  --input: #2e3c5c;
+  --border: #25324d;
+  --input: #2b3a58;
   --ring: #7f9fe0;
   --chart-1: #7f9fe0;
   --chart-2: #4f7fca;
@@ -75,8 +75,8 @@
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -121,6 +121,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+  h1, h2, h3 {
+    @apply tracking-tight;
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--primary), transparent 70%);
   }
 }
 
@@ -203,5 +210,105 @@
   }
   .card-lift:hover {
     transform: translateY(-3px);
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes gradient-pan {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@layer utilities {
+  /* Faint dotted canvas used behind hero sections. */
+  .bg-dots {
+    background-image: radial-gradient(
+      color-mix(in oklch, var(--foreground), transparent 88%) 1px,
+      transparent 1px
+    );
+    background-size: 22px 22px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 40%, transparent 100%);
+  }
+
+  .text-gradient {
+    background-image: linear-gradient(100deg, var(--primary), var(--accent), var(--primary));
+    background-size: 200% auto;
+    background-clip: text;
+    color: transparent;
+    animation: gradient-pan 8s ease-in-out infinite;
+  }
+
+  .glass {
+    background: color-mix(in oklch, var(--background), transparent 25%);
+    backdrop-filter: blur(14px) saturate(160%);
+  }
+
+  .animate-marquee {
+    animation: marquee 40s linear infinite;
+  }
+
+  /* SpotlightCard: a soft glow that follows the cursor (position set via --spot-x / --spot-y). */
+  .spotlight {
+    position: relative;
+    isolation: isolate;
+  }
+  .spotlight::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(
+      420px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      color-mix(in oklch, var(--primary), transparent 86%),
+      transparent 45%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .spotlight:hover::before {
+    opacity: 1;
+  }
+
+  /* Reveal: elements fade up once they scroll into view (toggled by components/motion/Reveal). */
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  [data-reveal='visible'] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
   }
 }
