@@ -29,10 +29,12 @@ export function Avatar({
                 items-center
                 justify-center
                 font-semibold
-                bg-primary
+                bg-gradient-to-br
+                from-primary
+                to-accent
                 text-primary-foreground
-                border
-                border-border
+                ring-2
+                ring-background
                 shrink-0
                 select-none
             `}

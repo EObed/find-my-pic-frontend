@@ -14,6 +14,7 @@ export function ImageUploadInput({
                                      maxImages = 100,
                                  }: ImageUploadInputProps) {
     const [pendingPhotos, setPendingPhotos] = useState<FrontEndImage[]>([])
+    const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const updateImages = (updated: FrontEndImage[]) => {
@@ -24,6 +25,11 @@ export function ImageUploadInput({
     const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.currentTarget.files
         if (!files) return
+        addFiles(files)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+
+    const addFiles = (files: FileList) => {
 
         const remainingSlots = maxImages - pendingPhotos.length
         const newPhotos: FrontEndImage[] = Array.from(files)
@@ -36,8 +42,6 @@ export function ImageUploadInput({
             }))
 
         updateImages([...pendingPhotos, ...newPhotos])
-
-        if (fileInputRef.current) fileInputRef.current.value = ''
     }
 
     const removeImage = (tempId: string) => {
@@ -65,7 +69,19 @@ export function ImageUploadInput({
             {/* Upload Button */}
             <div
                 onClick={() => fileInputRef.current?.click()}
-                className="card-lift group relative cursor-pointer rounded-xl border-2 border-dashed border-border p-8 text-center transition-colors hover:border-primary/50 hover:bg-primary/5"
+                onDragOver={(e) => {
+                    e.preventDefault()
+                    setIsDragging(true)
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                    e.preventDefault()
+                    setIsDragging(false)
+                    if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files)
+                }}
+                className={`group relative cursor-pointer rounded-2xl border-2 border-dashed p-10 text-center transition-all ${
+                    isDragging ? 'scale-[1.01] border-primary bg-primary/10' : 'border-border hover:border-primary/50 hover:bg-primary/5'
+                }`}
             >
                 <input
                     ref={fileInputRef}
@@ -81,7 +97,7 @@ export function ImageUploadInput({
                         <Upload className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                        <p className="font-semibold text-foreground">Click to upload images</p>
+                        <p className="font-semibold text-foreground">{isDragging ? 'Drop photos to add them' : 'Drag photos here, or click to browse'}</p>
                         <p className="text-sm text-muted-foreground">
                             {pendingPhotos.length}/{maxImages} images
                         </p>

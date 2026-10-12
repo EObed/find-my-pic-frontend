@@ -100,35 +100,34 @@ export function EventForm({ mode, event }: EventFormProps) {
                         ? 'Please standby while we create your event.'
                         : 'Please standby while we update your event.'}
             />}
-        <div className="min-h-screen bg-background pb-24">
-            {/* Header */}
-            <div className="sticky top-0 z-40 backdrop-blur-sm bg-background/80 border-b border-border">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <Link
-                            href={cancelHref}
-                            className="flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors"
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                            <span className="hidden sm:inline">Back</span>
-                        </Link>
-                        <h1 className="text-lg font-bold">
-                            {mode === 'create' ? 'Create Event' : 'Edit Event'}
-                        </h1>
-                        <div className="w-16" />
-                    </div>
-                </div>
-            </div>
-
+        <div className="min-h-[calc(100vh-4rem)] bg-background pb-28">
             {/* Form */}
             <form
                 id="event-form"
                 onSubmit={handleSubmit}
-                className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+                className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10"
             >
-                <div className="space-y-8">
+                <div className="mb-8 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <Link
+                        href={cancelHref}
+                        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        {event ? event.name : 'My Events'}
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-semibold sm:text-4xl">{mode === 'create' ? 'Create an event' : 'Edit event'}</h1>
+                        <p className="mt-2 text-muted-foreground">
+                            {mode === 'create'
+                                ? 'Add the details and your photos. You’ll get a code to share with guests.'
+                                : 'Update the event details. Changes are visible to guests right away.'}
+                        </p>
+                    </div>
+                </div>
+
+                <div className="space-y-6">
                     {/* Event Details */}
-                    <div className="space-y-6 rounded-xl border border-border bg-card p-6 shadow-xs animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <div className="space-y-6 rounded-2xl border border-border bg-card/80 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
                         <div>
                             <h2 className="text-xl font-semibold mb-6">Event Details</h2>
 
@@ -162,7 +161,7 @@ export function EventForm({ mode, event }: EventFormProps) {
                                     <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                                         <PopoverTrigger
                                             className={cn(
-                                                'flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background text-left font-normal hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                                                'flex h-11 w-full items-center rounded-lg border border-input bg-card/60 px-3 py-2 text-left text-sm font-normal transition-[border-color,box-shadow] hover:border-primary/30 focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/15 focus-visible:outline-none',
                                                 !eventDate && 'text-muted-foreground',
                                                 errors.eventDate && 'border-destructive'
                                             )}
@@ -210,7 +209,7 @@ export function EventForm({ mode, event }: EventFormProps) {
                     </div>
 
                     {/* Images — fixed height so photos scroll, not the action buttons */}
-                    <div className="rounded-xl border border-border bg-card p-6 shadow-xs animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
+                    <div className="rounded-2xl border border-border bg-card/80 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
                         <h2 className="text-xl font-semibold mb-6">Event Photos</h2>
                         <div className="max-h-[480px] overflow-y-auto pr-1">
                             <ImageUploadInput
@@ -226,7 +225,7 @@ export function EventForm({ mode, event }: EventFormProps) {
             </form>
 
             {/* Sticky footer actions */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-t border-border">
+            <div className="glass fixed bottom-0 left-0 right-0 z-40 border-t border-border">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex gap-4 justify-end">
                     <Button variant="outline" render={<Link href={cancelHref} />} nativeButton={false}>Cancel</Button>
                     <Button

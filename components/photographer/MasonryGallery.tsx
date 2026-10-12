@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { createPortal } from 'react-dom'
-import { ImageOff, X } from 'lucide-react'
+import { ImageOff, Maximize2 } from 'lucide-react'
+import { Lightbox } from '@/components/Lightbox'
 import {Photo} from "@/interfaces/Photo";
 
 interface MasonryGalleryProps {
@@ -11,63 +11,55 @@ interface MasonryGalleryProps {
 }
 
 export function MasonryGallery({ images, eventName }: MasonryGalleryProps) {
-    const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const [openIndex, setOpenIndex] = useState<number | null>(null)
 
     if (images.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-card/40 py-20 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
                     <ImageOff className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <p className="text-foreground/60">No images uploaded yet for this event.</p>
+                <p className="font-medium text-foreground">No photos yet</p>
+                <p className="text-sm text-muted-foreground">Photos you upload to this event will appear here.</p>
             </div>
         )
     }
 
+    const lightboxImages = images.map((image, index) => ({
+        src: image.file,
+        alt: image.title || `${eventName} - Photo ${index + 1}`,
+    }))
+
     return (
-        <div>
-            {/* Masonry Grid */}
-            <div className="columns-1 gap-4 sm:columns-2 lg:columns-3 xl:columns-4">
+        <>
+            <div className="columns-2 gap-3 sm:gap-4 lg:columns-3 xl:columns-4">
                 {images.map((image, index) => (
-                    <div
+                    <button
+                        type="button"
                         key={image.id || index}
-                        style={{ animationDelay: `${Math.min(index * 40, 320)}ms` }}
-                        className="card-lift group relative mb-4 block break-inside-avoid cursor-pointer overflow-hidden rounded-lg border border-border bg-background transition-all duration-300 animate-in fade-in zoom-in-95 fill-mode-both hover:border-primary/50 hover:shadow-lg"
-                        onClick={() => setSelectedImage(image.file)}
+                        onClick={() => setOpenIndex(index)}
+                        style={{ animationDelay: `${Math.min(index * 50, 400)}ms` }}
+                        className="group relative mb-3 block w-full break-inside-avoid overflow-hidden rounded-xl bg-muted text-left outline-none animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both focus-visible:ring-2 focus-visible:ring-primary sm:mb-4"
                     >
+                        {/* eslint-disable-next-line @next/next/no-img-element -- masonry needs natural image heights */}
                         <img
                             src={image.file}
-                            alt={`${eventName} - Photo ${index + 1}`}
-                            className="h-auto w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            alt={lightboxImages[index].alt}
+                            loading="lazy"
+                            className="h-auto w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                         />
-                        <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/20" />
-                    </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                        <div className="absolute inset-x-0 bottom-0 flex translate-y-2 items-center justify-between gap-2 p-3 text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                            <span className="truncate text-sm font-medium">{image.title || `Photo ${index + 1}`}</span>
+                            <span className="rounded-full bg-white/20 p-1.5 backdrop-blur-sm">
+                                <Maximize2 className="h-3.5 w-3.5" />
+                            </span>
+                        </div>
+                    </button>
                 ))}
             </div>
 
-            {/* Lightbox Modal */}
-            {selectedImage && typeof document !== 'undefined' && createPortal(
-                <div
-                    className="fixed inset-0 z-50 flex h-screen w-screen items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={() => setSelectedImage(null)}
-                >
-                    <div className="relative h-full max-h-[90vh] w-full max-w-4xl animate-in zoom-in-95 duration-200">
-                        <img
-                            src={selectedImage}
-                            alt="Full size"
-                            className="h-full w-full object-contain"
-                        />
-                        <button
-                            onClick={() => setSelectedImage(null)}
-                            className="absolute -top-10 right-0 rounded-full p-1 text-white transition-colors hover:text-primary"
-                            aria-label="Close"
-                        >
-                            <X className="h-8 w-8" />
-                        </button>
-                    </div>
-                </div>,
-                document.body
-            )}
-        </div>
+            <Lightbox images={lightboxImages} index={openIndex} onIndexChange={setOpenIndex} />
+        </>
     )
 }

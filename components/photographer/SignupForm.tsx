@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { GoogleIcon } from '@/components/GoogleIcon'
 import { signup } from '@/actions/auth'
+import { PasswordStrength } from '@/components/photographer/PasswordStrength'
 import { MIN_PASSWORD_LENGTH, validateSignup } from '@/lib/validation'
 
 export function SignupForm() {
@@ -195,6 +196,7 @@ export function SignupForm() {
                             <AlertCircle className="h-3 w-3" /> {errors.password}
                         </p>
                     )}
+                    <PasswordStrength password={password} />
                 </div>
 
                 <div className="space-y-2">
