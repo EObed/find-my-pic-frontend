@@ -3,7 +3,10 @@
 import { useState, type CSSProperties } from 'react'
 import { Upload, Sparkles, Download } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { UploadDiagram, AnalysisDiagram, DownloadDiagram } from '@/components/landing/StepDiagrams'
+import { StepAnimation } from '@/components/landing/StepAnimation'
+import uploadAnimation from '@/components/landing/lottie/upload.json'
+import analysisAnimation from '@/components/landing/lottie/analysis.json'
+import downloadAnimation from '@/components/landing/lottie/download.json'
 
 const STEPS = [
   {
@@ -11,21 +14,24 @@ const STEPS = [
     icon: Upload,
     title: 'Upload Your Photo',
     description: 'Take a clear selfie or photo and upload it to our platform. Any photo of yourself works.',
-    Diagram: UploadDiagram,
+    animation: uploadAnimation,
+    restFrame: 76,
   },
   {
     step: '02',
     icon: Sparkles,
     title: 'AI Analysis',
     description: 'Our advanced AI analyzes your appearance, facial features, and clothing for accurate matching.',
-    Diagram: AnalysisDiagram,
+    animation: analysisAnimation,
+    restFrame: 62,
   },
   {
     step: '03',
     icon: Download,
     title: 'Download & Share',
     description: 'Get your matched photos instantly and download them in high resolution.',
-    Diagram: DownloadDiagram,
+    animation: downloadAnimation,
+    restFrame: 40,
   },
 ]
 
@@ -60,9 +66,6 @@ export function HowItWorksSteps() {
                   )}
               />
 
-              {/* Action-specific animated diagram */}
-              <item.Diagram active={isActive} />
-
               <span className="pointer-events-none absolute -right-3 -bottom-6 text-[130px] leading-none font-black text-primary/[0.04] transition-all duration-500 md:-right-4 md:text-[160px] group-hover/step:text-primary/[0.08]">
                 {item.step}
               </span>
@@ -80,7 +83,15 @@ export function HowItWorksSteps() {
                   />
                 </div>
 
-                <div className="mt-6 space-y-2 md:mt-0">
+                {/* Action-specific Lottie animation */}
+                <StepAnimation
+                    data={item.animation}
+                    active={isActive}
+                    restFrame={item.restFrame}
+                    className="my-4 h-44 md:my-2 md:h-auto md:min-h-0 md:flex-1"
+                />
+
+                <div className="space-y-2">
                   <h3 className="truncate text-xl font-semibold">{item.title}</h3>
                   <p
                       className={cn(
