@@ -8,12 +8,14 @@ import { ImageInput } from '@/components/ImageInput';
 import { Loader } from '@/components/Loader';
 import { Logo } from '@/components/Logo';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { isValidEmail } from '@/lib/validation';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, AlertCircle, Mail, Check, Hash, ImageIcon, Lightbulb } from 'lucide-react';
+import { ArrowLeft, AlertCircle, Check, Hash, ImageIcon, Lightbulb } from 'lucide-react';
 import { toast } from 'sonner';
 import { ResultsHeader } from '@/components/ResultsHeader';
 import { ImageSelectionGrid, type MatchedImage } from '@/components/ImageSelectionGrid';
+import { PhotographerCredit } from '@/components/PhotographerCredit';
+import { generateMockPhotographer } from '@/lib/mockPhotographer';
+import type { PhotographerSummary } from '@/interfaces/Photographer';
 
 const generateMockMatches = (seed: string): MatchedImage[] =>
     Array.from({ length: 9 }, (_, i) => ({
@@ -28,30 +30,27 @@ export function UploadContent({ initialCode = '' }: { initialCode?: string }) {
     const [selectedImage, setSelectedImage] = useState<File | null>(null)
     const [eventCode, setEventCode] = useState(initialCode)
 
-    const [email, setEmail] = useState('')
-    const [emailTouched, setEmailTouched] = useState(false)
-
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     const [showResults, setShowResults] = useState(false)
     const [matchedImages, setMatchedImages] = useState<MatchedImage[]>([])
     const [selectedImageIds, setSelectedImageIds] = useState<string[]>([])
+    const [photographer, setPhotographer] = useState<PhotographerSummary | null>(null)
 
     const handleBackToUpload = () => {
         setShowResults(false)
         setMatchedImages([])
         setSelectedImageIds([])
+        setPhotographer(null)
         setSelectedImage(null)
         setError(null)
     }
 
-    const isEmailValid = isValidEmail(email)
     const isEventCodeValid = eventCode.trim().length > 0
     const isPhotoSelected = !!selectedImage
 
     const steps = [
-        { label: 'Email', done: isEmailValid, icon: Mail },
         { label: 'Event code', done: isEventCodeValid, icon: Hash },
         { label: 'Photo', done: isPhotoSelected, icon: ImageIcon },
     ]
@@ -83,8 +82,10 @@ export function UploadContent({ initialCode = '' }: { initialCode?: string }) {
             // TODO: replace with real matching API call
             await new Promise((resolve) => setTimeout(resolve, 2200))
 
-            const matches = generateMockMatches(eventCode || email)
+            const matches = generateMockMatches(eventCode)
+            const { id, name, avatarUrl } = generateMockPhotographer('ph-001')
             setMatchedImages(matches)
+            setPhotographer({ id, name, avatarUrl })
             setSelectedImageIds([])
             setShowResults(true)
             window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -157,12 +158,14 @@ export function UploadContent({ initialCode = '' }: { initialCode?: string }) {
                                 onImageSelect={handleImageSelection}
                                 isLoading={false}
                             />
+
+                            {photographer && <PhotographerCredit photographer={photographer} />}
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-3 text-center animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <h1 className="text-4xl font-semibold sm:text-5xl">Find your photos</h1>
-                                <p className="text-muted-foreground">Three quick details and we&apos;ll search the event gallery for you.</p>
+                                <p className="text-muted-foreground">Two quick details and we&apos;ll search the event gallery for you.</p>
                             </div>
 
                             {/* Step progress */}
@@ -195,36 +198,6 @@ export function UploadContent({ initialCode = '' }: { initialCode?: string }) {
                             {/* Details */}
                             <div className="space-y-5 rounded-2xl border border-border bg-card/80 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100 fill-mode-both">
                                 <div className="space-y-2">
-                                    <label htmlFor="email" className="block text-sm font-medium text-foreground">
-                                        Email address
-                                    </label>
-                                    <div className="relative">
-                                        <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            placeholder="you@example.com"
-                                            value={email}
-                                            onChange={(e) => {
-                                                setEmail(e.target.value)
-                                                setError(null)
-                                            }}
-                                            onBlur={() => setEmailTouched(true)}
-                                            disabled={isLoading}
-                                            aria-invalid={emailTouched && !isEmailValid}
-                                            className="pl-10"
-                                        />
-                                    </div>
-                                    {emailTouched && !isEmailValid ? (
-                                        <p className="flex items-center gap-1 text-xs text-destructive">
-                                            <AlertCircle className="h-3 w-3" /> Please enter a valid email address.
-                                        </p>
-                                    ) : (
-                                        <p className="text-xs text-muted-foreground">We&apos;ll send a secure link to your full-resolution photos here.</p>
-                                    )}
-                                </div>
-
-                                <div className="space-y-2">
                                     <label htmlFor="eventCode" className="block text-sm font-medium text-foreground">
                                         Event code
                                     </label>
@@ -250,13 +223,8 @@ export function UploadContent({ initialCode = '' }: { initialCode?: string }) {
 
                             {/* Photo */}
                             <div className="space-y-4 rounded-2xl border border-border bg-card/80 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both">
-                                <div>
-                                    <p className="text-sm font-medium text-foreground">Your photo</p>
-                                    {!isEmailValid && (
-                                        <p className="text-xs text-muted-foreground">Enter a valid email first to unlock this step.</p>
-                                    )}
-                                </div>
-                                <ImageInput onImageSelected={handleImageSelected} disabled={isLoading || !isEmailValid} />
+                                <p className="text-sm font-medium text-foreground">Your photo</p>
+                                <ImageInput onImageSelected={handleImageSelected} disabled={isLoading} />
 
                                 <div className="flex gap-3 rounded-xl bg-primary/5 p-3.5">
                                     <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -284,7 +252,7 @@ export function UploadContent({ initialCode = '' }: { initialCode?: string }) {
                                 <Button
                                     type="submit"
                                     size="lg"
-                                    disabled={isLoading || !selectedImage || !isEventCodeValid || !isEmailValid}
+                                    disabled={isLoading || !selectedImage || !isEventCodeValid}
                                     className="sm:flex-[2]"
                                 >
                                     {isLoading ? 'Searching…' : completed === steps.length ? 'Find my photos' : `${steps.length - completed} step${steps.length - completed === 1 ? '' : 's'} to go`}

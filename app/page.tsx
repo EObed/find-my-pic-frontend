@@ -86,12 +86,12 @@ const FAQ_ITEMS = [
   },
   {
     question: 'Do I need to create an account?',
-    answer: 'No. Guests only need an email address, the event code, and a photo of themselves.',
+    answer: 'No. Guests only need the event code and a photo of themselves.',
   },
   {
     question: 'Can other people see my matches?',
     answer:
-      'No. Your matches are shown only to you, and your download link goes to the email address you enter.',
+      'No. Your matches are shown only to you, right in your browser, and you download them directly from there.',
   },
 ]
 

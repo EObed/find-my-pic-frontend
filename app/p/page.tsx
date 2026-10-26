@@ -58,7 +58,7 @@ const FEATURES = [
   {
     icon: Users,
     title: 'Every guest included',
-    description: 'Each guest gets their own matches and download link, however big the event.',
+    description: 'Each guest gets their own matches to download, however big the event.',
   },
 ]
 
@@ -77,7 +77,7 @@ const PREVIEW_EVENTS = [
 const FAQ_ITEMS = [
   {
     question: 'Do my guests need an account?',
-    answer: 'No. Guests only enter their email, the event code, and a selfie. Accounts are just for photographers.',
+    answer: 'No. Guests only enter the event code and a selfie. Accounts are just for photographers.',
   },
   {
     question: 'How do guests get the event code?',
