@@ -21,11 +21,12 @@ const COLLAGE = [
     { seed: 'auth-portrait', h: 'h-40' },
 ]
 
+const BRAND_HEADLINE = 'Deliver every gallery without the busywork.'
 const BENEFITS = ['Create an event in under a minute', 'Guests find their own photos', 'Track every delivery']
 
 export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProps) {
     return (
-        <div className="grid min-h-screen bg-background lg:grid-cols-[1fr_1.05fr]">
+        <div className="grid min-h-screen overflow-x-clip bg-background lg:grid-cols-[1fr_1.05fr]">
             {/* Brand panel (large screens) */}
             <aside className="relative hidden overflow-hidden bg-gradient-to-br from-primary to-[color-mix(in_oklch,var(--primary),var(--accent)_45%)] text-primary-foreground lg:flex lg:flex-col lg:justify-between lg:p-12">
                 <div className="bg-dots pointer-events-none absolute inset-0 opacity-30" />
@@ -47,7 +48,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
                 </div>
 
                 <div className="relative max-w-md space-y-6">
-                    <h2 className="text-4xl leading-tight font-semibold">Deliver every gallery without the busywork.</h2>
+                    <h2 className="text-4xl leading-tight font-semibold">{BRAND_HEADLINE}</h2>
                     <ul className="space-y-3">
                         {BENEFITS.map((benefit) => (
                             <li key={benefit} className="flex items-center gap-2.5 text-primary-foreground/90">
@@ -81,6 +82,22 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
 
                 <main className="relative flex flex-1 items-center justify-center px-4 py-10 sm:px-8">
                     <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {/* Compact brand panel (below large screens, where the side panel is hidden) */}
+                        <div className="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-[color-mix(in_oklch,var(--primary),var(--accent)_45%)] p-6 text-primary-foreground lg:hidden">
+                            <div className="bg-dots pointer-events-none absolute inset-0 opacity-30" />
+                            <div className="relative space-y-4">
+                                <h2 className="text-xl leading-snug font-semibold">{BRAND_HEADLINE}</h2>
+                                <ul className="space-y-2 text-sm">
+                                    {BENEFITS.map((benefit) => (
+                                        <li key={benefit} className="flex items-center gap-2 text-primary-foreground/90">
+                                            <CircleCheck className="h-4 w-4 shrink-0" />
+                                            {benefit}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+
                         <div className="mb-8 space-y-2">
                             <h1 className="text-3xl font-semibold">{title}</h1>
                             <p className="text-muted-foreground">{subtitle}</p>
@@ -88,7 +105,7 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
 
                         <div className="space-y-6">{children}</div>
 
-                        <div className="mt-8 text-sm text-muted-foreground">{footer}</div>
+                        <div className="mt-8 text-center text-sm text-muted-foreground">{footer}</div>
                     </div>
                 </main>
             </div>
